@@ -314,18 +314,18 @@ export declare namespace MapParser {
 
 
 export class MapParser extends EventDispatcher {
-	private static _this: MapParser;
+	private static _instance: MapParser;
 
 	public '@load:map' = new Event<MapParser, [Map]>(this);
 	public '@load:tileset' = new Event<MapParser, [Tileset]>(this);
 
-	constructor() {
-		if(MapParser._this) return MapParser._this;
-
+	protected constructor() {
 		super();
 
-		MapParser._this = this;
+		if(MapParser._instance) MapParser._instance = this;
 	}
+
+	public static instance(): MapParser { return MapParser._instance || new MapParser(); }
 
 	public loadMap(src: string): Promise<Map> {
 		return fetch(src).then(data => data.json()).then((_map: IMap) => {

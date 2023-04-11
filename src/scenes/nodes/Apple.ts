@@ -2,8 +2,9 @@ import { Vector2 } from '@ver/Vector2';
 import { NodeCell } from '@/scenes/nodes/NodeCell';
 
 
-export class Player extends NodeCell {
+export class Apple extends NodeCell {
 	public size = new Vector2(1, 1);
+
 
 	constructor() {
 		super({
@@ -11,15 +12,6 @@ export class Player extends NodeCell {
 		});
 	}
 
-
-	public move(target: Vector2): void {
-		this.tryMoveTo(target)
-	}
-
-
-	protected _process(dt: number): void {
-		// this.position.moveTo(this.target, this.speed * dt, true);
-	}
 
 	protected _draw(
 		ctx: CanvasRenderingContext2D,
@@ -37,12 +29,8 @@ export class Player extends NodeCell {
 		ctx.translate(pos.x + size.x/2, pos.y + size.y/2);
 		ctx.rotate(rot);
 		ctx.translate(-(pos.x + size.x/2), -(pos.y + size.y/2));
-		ctx.fillStyle = '#ff1111';
+		ctx.fillStyle = '#11ee11';
 		ctx.fillRect(pos.x, pos.y, size.x, size.y);
 		ctx.restore();
-	}
-
-	public sey(msg: string) {
-		;
 	}
 }

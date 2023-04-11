@@ -3,28 +3,28 @@ import { MapParser } from '@ver/MapParser';
 import { Node2D } from '@/scenes/nodes/Node2D';
 
 
-const mapParser = new MapParser();
-
 export class TileMap extends Node2D {
-	public map!: MapParser.Map;
 	public readonly size = new Vector2(1, 1);
 
 	private _cacheTile: { [id: number]: MapParser.Tileset } = {};
 
+	private map: MapParser.Map | null = null;
 
-	constructor(public readonly src: string, size?: Vector2) {
+	constructor(size?: Vector2) {
 		super();
 
 		if(size) this.size.set(size);
 	}
 
-	protected async _ready(): Promise<void> {
-		await super._ready();
-
-		this.map = await mapParser.loadMap(this.src);
+	public getMap(): MapParser.Map | null { return this.map; }
+	public setMap(map: MapParser.Map): void {
+		this.map = map;
+		this._cacheTile = {};
 	}
 
 	protected _draw(ctx: CanvasRenderingContext2D, pos: Vector2, scale: Vector2, rot: number, pixelDensity: number): void {
+		if(!this.map) return;
+
 		const map = this.map;
 
 		ctx.save();

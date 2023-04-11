@@ -12,14 +12,15 @@ export class Node2D extends Node {
 	public get rotation(): number { return this._rotation; }
 	public set rotation(v: number) { this._rotation = v; }
 
-	protected _zIndex: number = 0;
-	public get zIndex(): number { return this._zIndex; }
-	public set zIndex(v: number) { this._zIndex = v; }
-
-	public zAsRelative: boolean = true;
+	// protected _zIndex: number = 0;
+	// public get zIndex(): number { return this._zIndex; }
+	// public set zIndex(v: number) { this._zIndex = v; }
+	//
+	// public zAsRelative: boolean = true;
 
 	constructor() { super(); }
 
+	/*
 	public get globalPosition(): Vector2 { return this.getRelativePosition(Node.MAX_NESTING); }
 	public get globalScale(): Vector2 { return this.getRelativeScale(Node.MAX_NESTING); }
 	public get globalRotation(): number { return this.getRelativeRotation(Node.MAX_NESTING); }
@@ -86,10 +87,15 @@ export class Node2D extends Node {
 
 		return acc;
 	}
+	*/
 
+
+	// public getDrawPosition(camera: Camera) {
+	// 	return this.globalPosition.inc(camera.scale).inc(camera.pixelDensity).sub(camera.getDrawPosition());
+	// }
 
 	public getDrawPosition(camera: Camera) {
-		return this.globalPosition.inc(camera.scale).inc(camera.pixelDensity).sub(camera.getDrawPosition());
+		return this.position.buf().inc(camera.scale).inc(camera.pixelDensity).sub(camera.getDrawPosition());
 	}
 
 
@@ -102,11 +108,22 @@ export class Node2D extends Node {
 	) {}
 
 
+	// public render(this: Node2D, layers: LayersList, camera: Camera): void {
+	// 	this._draw(layers.main,
+	// 		this.getDrawPosition(camera),
+	// 		this.globalScale.inc(camera.scale),
+	// 		this.globalRotation - camera.rotation,
+	// 		camera.pixelDensity
+	// 	);
+	//
+	// 	super.render(layers, camera);
+	// }
+
 	public render(this: Node2D, layers: LayersList, camera: Camera): void {
 		this._draw(layers.main,
 			this.getDrawPosition(camera),
-			this.globalScale.inc(camera.scale),
-			this.globalRotation - camera.rotation,
+			this.scale.buf().inc(camera.scale),
+			this.rotation - camera.rotation,
 			camera.pixelDensity
 		);
 

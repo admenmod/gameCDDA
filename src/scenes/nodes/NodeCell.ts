@@ -17,16 +17,59 @@ export class NodeCell extends Node2D {
 	protected _isInTree: boolean = false;
 	public get isInTree(): boolean { return this._isInTree; }
 
-	constructor() {
+	public isPickupable: boolean;
+	public inHands: NodeCell | null = null;
+
+
+	constructor(p: {
+		isPickupable: boolean
+	}) {
 		super();
+
+		this.isPickupable = p.isPickupable;
 	}
+
+
+	public onselfpickup(picker: NodeCell) {
+		this._world!.delObject(this);
+
+		// picker.pocket
+		picker.inHands = this;
+	}
+
+	public onselfput(picker: NodeCell, target: Vector2) {
+		this.cellpos.set(target);
+
+		picker._world!.addObject(this);
+
+		// picker.pocket
+		picker.inHands = null;
+	}
+
+	public tryPutfromHandsTo(dir: Vector2): boolean {
+		if(!this.inHands) return false;
+
+		const target = this.cellpos.buf().add(dir);
+		const has = this._world!.hasPut(this, target);
+
+		if(has) this.inHands.onselfput(this, target);
+
+		return has;
+	}
+
+	public tryPickup(o: NodeCell): boolean {
+		const has = this._world!.hasPickUp(this, o);
+
+		if(has) o.onselfpickup(this);
+
+		return has;
+	}
+
 
 	public tryMoveTo(target: Vector2): boolean {
 		if(!this._isInTree) return false;
 
 		const has = this._world!.hasNodeMovedTo(this, target);
-		console.log(has);
-
 
 		if(has) {
 			this.cellpos.add(target);

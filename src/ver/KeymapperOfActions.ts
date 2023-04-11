@@ -59,14 +59,14 @@ export class KeymapperOfActions extends EventDispatcher {
 	public '@enable' = new Event<KeymapperOfActions, []>(this);
 	public '@disable' = new Event<KeymapperOfActions, []>(this);
 
-	public '@newmode' = new Event<KeymapperOfActions, [mode_t]>(this);
-	public '@changemode' = new Event<KeymapperOfActions, [mode_t]>(this);
+	public '@newmode' = new Event<KeymapperOfActions, [mode_t, MappingsMode]>(this);
+	public '@changemode' = new Event<KeymapperOfActions, [mode_t, MappingsMode]>(this);
 	public '@register' = new Event<KeymapperOfActions, [mode_t | 0, mapping_t, action_t]>(this);
 
 	protected keyboardInputInterceptor!: KeyboardInputInterceptor;
 
 	private mode: mode_t | null = null;
-	public mapmap = new Map<mode_t, MappingsMode>();
+	public mapmap: Record<mode_t, MappingsMode> = Object.create(null);
 
 	public gmaps: MappingsMode = new MappingsMode(KeymapperOfActions.GLOBAL_MODE);
 	public cmaps!: MappingsMode;
@@ -83,7 +83,7 @@ export class KeymapperOfActions extends EventDispatcher {
 	private handler!: (e: KeyboardInputInterceptor.Event) => any;
 
 
-	constructor(mode: mode_t, timeoutlen?: number) {
+	constructor(mode: mode_t | MappingsMode, timeoutlen?: number) {
 		super();
 
 		if(timeoutlen) this.timeoutlen = timeoutlen;
@@ -99,6 +99,7 @@ export class KeymapperOfActions extends EventDispatcher {
 		this._isActive = true;
 		this.emit('enable');
 	}
+
 	public disable(this: KeymapperOfActions): void {
 		this._isActive = false;
 		this.emit('disable');
@@ -156,28 +157,37 @@ export class KeymapperOfActions extends EventDispatcher {
 	}
 
 	public register(this: KeymapperOfActions, mode: mode_t | 0, mapping: mapping_t, action: action_t): void {
-		if(mode !== 0 && !this.mapmap.has(mode) || !mapping.length) return;
+		if(mode !== 0 && !this.mapmap[mode] || !mapping.length) return;
 
 		let maps: MappingsMode;
 		if(mode === 0) maps = this.gmaps;
-		else maps = this.mapmap.get(mode)!;
+		else maps = this.mapmap[mode];
 
 		maps.register(mapping, action);
 
 		this.emit('register', mode, mapping, action);
 	}
 
-	setMode(this: KeymapperOfActions, mode: mode_t) {
-		if(!this.mapmap.has(mode)) {
-			this.mapmap.set(mode, new MappingsMode(mode));
+	public setMode(this: KeymapperOfActions, mode: mode_t | MappingsMode) {
+		if(typeof mode === 'object') {
+			this.mapmap[mode.mode] = mode;
 
-			this.emit('newmode', mode);
+			this.emit('newmode', mode.mode, mode);
+
+			this.mode = mode.mode;
+			this.cmaps = mode;
+
+			this.emit('changemode', mode.mode, mode);
+		} else if(!this.mapmap[mode]) {
+			this.mapmap[mode] = new MappingsMode(mode);
+
+			this.emit('newmode', mode, this.mapmap[mode]);
+
+			this.mode = mode;
+			this.cmaps = this.mapmap[this.mode];
+
+			this.emit('changemode', mode, this.mapmap[mode]);
 		}
-
-		this.mode = mode;
-		this.cmaps = this.mapmap.get(this.mode)!;
-
-		this.emit('changemode', mode);
 	}
 
 	public update(dt: number): void {

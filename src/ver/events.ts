@@ -92,7 +92,7 @@ export class EventDispatcher {
 
 type primitive_t = string | number | symbol;
 
-class EventEmitter {
+export class EventEmitter {
 	protected _events!: { [type: primitive_t]: FnOnce[] & { store: any } };
 
 	constructor(public isUseStore: boolean = false) {

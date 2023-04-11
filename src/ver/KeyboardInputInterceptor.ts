@@ -118,8 +118,6 @@ export class KeyboardInputInterceptor extends EventDispatcher {
 			}
 
 			(this as KeyboardInputInterceptor).emit('key:all', data);
-
-			// console.log(data.type, data);
 		};
 	}
 

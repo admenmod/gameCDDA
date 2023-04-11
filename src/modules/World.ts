@@ -1,10 +1,13 @@
 import { Vector2 } from '@ver/Vector2';
-import { EventDispatcher, Event } from '@ver/events';
+import { Event } from '@ver/events';
+import { Scene } from '@ver/Scene';
 import { NodeCell } from '@/scenes/nodes/NodeCell';
 import { Date } from '@/modules/Date';
+import type { Camera } from '@ver/Camera';
+import type { LayersList } from '@ver/CanvasLayer';
 
 
-export class World extends EventDispatcher {
+export class World extends Scene {
 	public size = new Vector2();
 	public cellsize = new Vector2(1, 1);
 
@@ -22,6 +25,9 @@ export class World extends EventDispatcher {
 		this.size.set(p.size);
 	}
 
+	public getObjectCellUp(target: Vector2): NodeCell | null{
+		return this.all_nodes.find(i => i.cellpos.isSame(target)) || null;
+	}
 
 	public addObject(o: NodeCell): void {
 		//@ts-ignore friend
@@ -31,6 +37,8 @@ export class World extends EventDispatcher {
 		o._isInTree = true;
 		//@ts-ignore friend
 		o._world = this;
+
+		o.position.set(o.cellpos.buf().inc(this.cellsize));
 		//@ts-ignore friend
 		o._enter_world(this);
 		o.emit('enter_world', this);
@@ -70,16 +78,47 @@ export class World extends EventDispatcher {
 		return true;
 	}
 
+	public hasPickUp(node1: NodeCell, node2: NodeCell): boolean {
+		if(node1 === node2) throw new Error('node1 === node2');
+
+		if(this.getDistance(node1, node2) > 2) return false;
+
+		if(!node2.isPickupable) return false;
+
+		return true;
+	}
+
+	public hasPut(node1: NodeCell, target: Vector2): boolean {
+		if(node1.cellpos.getDistance(target) > 2) return false;
+
+		// if(!node2.isPickupable) return true;
+
+		if(this.all_nodes.some(i => i.cellpos.isSame(target))) return false;
+
+		return true;
+	}
+
 	public getDistance(node1: NodeCell, node2: NodeCell): number {
 		return node1.cellpos.getDistance(node2.cellpos);
 	}
 
-	public update(dt: number): void {
+
+	// protected async _load(): Promise<void> {
+	// 	await Promise.all(this.all_nodes.map(i => i.()));
+	// }
+
+	protected _process(dt: number): void {
 		for(let i = 0; i < this.all_nodes.length; i++) {
 			for(let j = i + 1; j < this.all_nodes.length; j++) {
 				const node1 = this.all_nodes[i];
 				const node2 = this.all_nodes[j];
 			}
+		}
+	}
+
+	protected _render(layers: LayersList, camera: Camera): void {
+		for(let i = 0; i < this.all_nodes.length; i++) {
+			this.all_nodes[i].render(layers, camera);
 		}
 	}
 }

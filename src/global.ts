@@ -1,13 +1,14 @@
 import { Vector2 } from '@ver/Vector2';
 import { EventDispatcher, Event } from '@ver/events';
+import { Scene } from '@ver/Scene';
 import { TouchesController } from '@ver/TouchesController';
 import { MainLoop } from '@ver/MainLoop';
 import { CanvasLayer } from '@ver/CanvasLayer';
 import { Camera } from '@ver/Camera';
 import { MapParser } from '@ver/MapParser';
+import { KeyboardInputInterceptor } from '@ver/KeyboardInputInterceptor';
 import type { LayersList } from '@ver/CanvasLayer';
 
-import { Node } from '@/scenes/nodes/Node';
 import { MainScene } from '@/scenes/MainScene';
 import { SensorCamera } from '@/modules/SensorCamera';
 
@@ -31,7 +32,15 @@ for(let id in canvas.layers) {
 
 export const touches = new TouchesController(canvas);
 
-export const mapParser = new MapParser();
+
+export const hiddenInput = document.createElement('input');
+hiddenInput.style.position = 'fixed';
+hiddenInput.style.top = '-1000px';
+canvas.append(hiddenInput);
+
+export const keyboardInputInterceptor = new KeyboardInputInterceptor(hiddenInput);
+keyboardInputInterceptor.init();
+canvas.addEventListener('click', () => keyboardInputInterceptor.focus());
 
 
 export const gm = new class GameManager extends EventDispatcher {
@@ -42,7 +51,7 @@ export const gm = new class GameManager extends EventDispatcher {
 	public screen = new Vector2(canvas.size);
 	public camera = new SensorCamera(new Camera(this.screen, 30));
 
-	public main_scene!: Node;
+	public main_scene!: Scene;
 
 
 	constructor() {
@@ -75,4 +84,7 @@ mainLoop.on('update', dt => {
 
 mainLoop.start();
 
-gm.main_scene.ready();
+
+gm.main_scene.load().then(() => {
+	gm.main_scene.init();
+});

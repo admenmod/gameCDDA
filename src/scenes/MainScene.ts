@@ -1,27 +1,33 @@
-import { Vector2 } from '@ver/Vector2';
-import { KeyboardInputInterceptor } from '@ver/KeyboardInputInterceptor';
-import { KeymapperOfActions } from '@ver/KeymapperOfActions';
-import type { Camera } from '@ver/Camera';
 import type { LayersList } from '@ver/CanvasLayer';
+import type { Camera } from '@ver/Camera';
+import { Vector2 } from '@ver/Vector2';
+import type { Scene } from '@ver/Scene';
+import { MapParser } from '@ver/MapParser';
+import { KeyboardInputInterceptor } from '@ver/KeyboardInputInterceptor';
+import { KeymapperOfActions, MappingsMode } from '@ver/KeymapperOfActions';
 
 import { Node2D } from '@/scenes/nodes/Node2D';
 import { TileMap } from '@/scenes/nodes/TileMap';
 import { Popup } from '@/scenes/nodes/Popup';
 import { NodeCell } from '@/scenes/nodes/NodeCell';
 import { Player } from '@/scenes/nodes/Player';
+import { Apple } from '@/scenes/nodes/Apple';
 
 import { GridMap } from '@/modules/GridMap';
 import { World } from '@/modules/World';
-import { touches, canvas, layers, gm, mapParser } from '@/global';
+import { touches, canvas, layers, gm, keyboardInputInterceptor } from '@/global';
 
 
 export class MainScene extends Node2D {
-	private keymapperOfActions!: KeymapperOfActions;
+	declare public tree: Scene.Tree<typeof MainScene.TREE>;
 
-	public world: World;
+	protected static readonly TREE = {
+		Apple: [Apple],
+		Player: [Player],
+		World: [World, { size: new Vector2(20, 20) }],
+		TileMap: [TileMap, new Vector2(1, 1)]
+	} as const;
 
-	public player!: Player;
-	public tilemap!: TileMap;
 
 	public gridMap = new GridMap({
 		tile: new Vector2().set(gm.camera.pixelDensity),
@@ -30,6 +36,12 @@ export class MainScene extends Node2D {
 	});
 
 	private popups: Popup[] = [];
+
+
+	private get apple() { return this.tree.Apple; }
+	private get player() { return this.tree.Player; }
+	private get world() { return this.tree.World; }
+	private get tilemap() { return this.tree.TileMap; }
 
 
 	private systemInfoDrawObject = {
@@ -76,33 +88,13 @@ export class MainScene extends Node2D {
 	};
 
 
-	constructor() {
-		super();
-
-		if(globalThis.Android) {
-			console.log(Android);
-
-			// console.log(Android.log());
-		} else console.log('not Android');
+	private keymapperOfActions!: KeymapperOfActions;
+	private normal_mode = new MappingsMode('normal');
 
 
-		const hiddenInput = document.createElement('input');
-		hiddenInput.style.position = 'fixed';
-		hiddenInput.style.top = '-1000px';
-		canvas.append(hiddenInput);
-
-		const keyboardInputInterceptor = new KeyboardInputInterceptor(hiddenInput);
-		keyboardInputInterceptor.init();
-		canvas.addEventListener('click', () => keyboardInputInterceptor.focus());
-		// keyboardInputInterceptor.input.onblur = () => keyboardInputInterceptor.input.focus();
-
-		keyboardInputInterceptor.on('key:all', e => {
-			// console.log(e.type, e.key, e);
-		});
-
-
-		const keymapperOfActions = this.keymapperOfActions = new KeymapperOfActions('normal');
-		keymapperOfActions.init(keyboardInputInterceptor);
+	protected async _init(): Promise<void> {
+		this.keymapperOfActions = new KeymapperOfActions(this.normal_mode);
+		this.keymapperOfActions.init(keyboardInputInterceptor);
 
 
 		const onmappings: KeymapperOfActions.Action = ({ mapping }) => {
@@ -133,35 +125,39 @@ export class MainScene extends Node2D {
 				text: text
 			});
 
-			popup.ready();
+			// popup.init();
 			this.popups.push(popup);
 		};
 
-		keymapperOfActions.register(0, ['i', 'i'], onmappings);
+		this.normal_mode.register(['i', 'i'], onmappings);
 
-		keymapperOfActions.register(0, ['Ctrl- '], onmappings);
-		keymapperOfActions.register(0, ['Ctrl-l'], onmappings);
+		this.normal_mode.register(['Ctrl- '], onmappings);
+		this.normal_mode.register(['Ctrl-l'], onmappings);
 
-		keymapperOfActions.register(0, ['\\', 'h'], onmappings);
-		keymapperOfActions.register(0, ['\\', 'h', 's'], onmappings);
-		keymapperOfActions.register(0, ['a', 's'], onmappings);
-		keymapperOfActions.register(0, ['a', 'a'], onmappings);
+		this.normal_mode.register(['\\', 'h'], onmappings);
+		this.normal_mode.register(['\\', 'h', 's'], onmappings);
+		this.normal_mode.register(['a', 's'], onmappings);
+		this.normal_mode.register(['a', 'a'], onmappings);
 
-		keymapperOfActions.register(0, ['ArrowUp'], () => this.player.move(Vector2.UP));
-		keymapperOfActions.register(0, ['ArrowDown'], () => this.player.move(Vector2.DOWN));
-		keymapperOfActions.register(0, ['ArrowLeft'], () => this.player.move(Vector2.LEFT));
-		keymapperOfActions.register(0, ['ArrowRight'], () => this.player.move(Vector2.RIGHT));
+		this.normal_mode.register(['ArrowUp'], () => this.player.move(Vector2.UP));
+		this.normal_mode.register(['ArrowDown'], () => this.player.move(Vector2.DOWN));
+		this.normal_mode.register(['ArrowLeft'], () => this.player.move(Vector2.LEFT));
+		this.normal_mode.register(['ArrowRight'], () => this.player.move(Vector2.RIGHT));
 
 
-		console.log(
-`global: ${JSON.stringify(keymapperOfActions.gmaps.map(i => i.mapping.join('|')), null, '\t')
-}, ${
-	JSON.stringify([...keymapperOfActions.mapmap].map(([mode, maps]) => {
-		return `mode: ${mode.toString()} > ${
-			JSON.stringify(maps.map(i => i.mapping.join('|')), null, '\t')
-		}`;
-	}), null, '\t')
-}`);
+		this.normal_mode.register(['w'], () => {
+			const o = this.world.getObjectCellUp(this.player.cellpos.buf().add(0, -1));
+			if(o) this.player.tryPickup(o);
+		});
+
+		this.normal_mode.register(['d'], () => {
+			this.player.tryPutfromHandsTo(Vector2.UP);
+		});
+
+
+
+		const map = await MapParser.instance().loadMap('maps/test-map.json');
+		this.tree.TileMap.setMap(map);
 
 
 		const updateOnResize = (size: Vector2) => {
@@ -176,26 +172,16 @@ export class MainScene extends Node2D {
 
 		gm.on('resize', updateOnResize);
 		gm.on('camera.scale', scale => this.gridMap.scale.set(scale));
-
-
-		this.tilemap = this.addChild(new TileMap('maps/test-map.json'), 'TileMap');
-
-		this.player = this.addChild(new Player({
-			pos: new Vector2(8, 8),
-			size: new Vector2(0.95, 0.95)
-		}), 'Player');
-
-
-		this.world = new World({ size: new Vector2(20, 20) });
-		this.world.date.setHours(6);
-
-
-		console.log(`Initialize scene "${this.name}"`);
 	}
 
-	//========== Init ==========//
-	protected _init(): void {
-		const tilemap = this.getNode<TileMap>('TileMap')!.map;
+	protected _ready(): void {
+		this.world.date.setHours(6);
+
+		this.player.cellpos.set(8, 8);
+		this.apple.cellpos.set(6, 6);
+
+
+		const tilemap = this.tilemap.getMap()!;
 		console.log(tilemap);
 
 
@@ -207,27 +193,31 @@ export class MainScene extends Node2D {
 			const x = i % layer.width;
 			const y = Math.floor(i / layer.width);
 
-			const o = new NodeCell();
+			const o = new NodeCell({
+				isPickupable: false
+			});
+
 			o.cellpos.set(x, y);
-			o.ready();
+			o.init();
 
 			this.world.addObject(o);
 		}
 
 
-		this.world.addObject(this.player);
 		this.player.cellpos.set(8, 8);
+		this.world.addObject(this.player);
 
-		console.log(`Scene: ${this.name}\nScreen size: ${gm.screen.x}, ${gm.screen.y}`);
+		this.apple.cellpos.set(6, 6);
+		this.world.addObject(this.apple);
 	}
 
-	//========== Update ==========//
 	protected _process(dt: number): void {
 		this.keymapperOfActions.update(dt);
 
-		const player = this.getNode<Player>('Player')!;
+		const player = this.tree.Player;
 
-		gm.camera.position.moveTime(player.globalPosition, 10);
+		gm.camera.position.moveTime(player.position, 10);
+		// gm.camera.position.moveTime(player.globalPosition, 10);
 		// gm.camera.position.set(player.globalPosition);
 
 		gm.camera.process(dt, touches);
@@ -245,7 +235,9 @@ export class MainScene extends Node2D {
 		}
 
 		this.tilemap.process(dt);
-		this.player.process(dt);
+		// this.player.process(dt);
+		// this.apple.process(dt);
+		this.world.process(dt);
 
 		this.systemInfoDrawObject.update(dt);
 	}
@@ -255,7 +247,9 @@ export class MainScene extends Node2D {
 
 		this.gridMap.draw(layers.main, camera.getDrawPosition());
 		this.tilemap.render(layers, camera);
-		this.player.render(layers, camera);
+		// this.player.render(layers, camera);
+		// this.apple.render(layers, camera);
+		this.world.render(layers, camera);
 
 
 		const center = this.getDrawPosition(camera);
@@ -290,10 +284,5 @@ export class MainScene extends Node2D {
 
 
 		this.systemInfoDrawObject.draw(layers.main);
-	}
-
-	//========== Exit ==========//
-	protected _exit(): void {
-		console.log(this.name, 'exit');
 	}
 }
