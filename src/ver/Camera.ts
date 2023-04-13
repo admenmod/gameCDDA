@@ -6,7 +6,7 @@ export class Camera extends EventDispatcher {
 	public readonly position = new Vector2();
 	public readonly scale = new Vector2(1, 1);
 
-	public _rotation: number = 0;
+	protected _rotation: number = 0;
 	public get rotation(): number { return this._rotation; }
 	public set rotation(v: number) { this._rotation = v; }
 

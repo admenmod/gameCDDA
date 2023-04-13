@@ -17,27 +17,28 @@ export class NodeCell extends Node2D {
 	protected _isInTree: boolean = false;
 	public get isInTree(): boolean { return this._isInTree; }
 
-	public isPickupable: boolean;
+	public isPickupable!: boolean;
 	public inHands: NodeCell | null = null;
 
 
-	constructor(p: {
+	//@ts-ignore
+	protected async _init(p: {
 		isPickupable: boolean
-	}) {
-		super();
+	}): Promise<void> {
+		await super._init();
 
 		this.isPickupable = p.isPickupable;
 	}
 
 
-	public onselfpickup(picker: NodeCell) {
+	private _onselfpickup(picker: NodeCell) {
 		this._world!.delObject(this);
 
 		// picker.pocket
 		picker.inHands = this;
 	}
 
-	public onselfput(picker: NodeCell, target: Vector2) {
+	private _onselfput(picker: NodeCell, target: Vector2) {
 		this.cellpos.set(target);
 
 		picker._world!.addObject(this);
@@ -52,7 +53,7 @@ export class NodeCell extends Node2D {
 		const target = this.cellpos.buf().add(dir);
 		const has = this._world!.hasPut(this, target);
 
-		if(has) this.inHands.onselfput(this, target);
+		if(has) this.inHands._onselfput(this, target);
 
 		return has;
 	}
@@ -60,7 +61,7 @@ export class NodeCell extends Node2D {
 	public tryPickup(o: NodeCell): boolean {
 		const has = this._world!.hasPickUp(this, o);
 
-		if(has) o.onselfpickup(this);
+		if(has) o._onselfpickup(this);
 
 		return has;
 	}

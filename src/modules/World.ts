@@ -5,9 +5,10 @@ import { NodeCell } from '@/scenes/nodes/NodeCell';
 import { Date } from '@/modules/Date';
 import type { Camera } from '@ver/Camera';
 import type { LayersList } from '@ver/CanvasLayer';
+import { Node2D } from '@/scenes/nodes/Node2D';
 
 
-export class World extends Scene {
+export class World extends Node2D {
 	public size = new Vector2();
 	public cellsize = new Vector2(1, 1);
 
@@ -16,14 +17,13 @@ export class World extends Scene {
 
 	public date: Date = new Date();
 
-
-	constructor(p: {
-		size: Vector2
-	}) {
-		super();
-
+	//@ts-ignore
+	protected async _init(
+		p: { size: Vector2 }
+	): Promise<void> {
 		this.size.set(p.size);
 	}
+
 
 	public getObjectCellUp(target: Vector2): NodeCell | null{
 		return this.all_nodes.find(i => i.cellpos.isSame(target)) || null;

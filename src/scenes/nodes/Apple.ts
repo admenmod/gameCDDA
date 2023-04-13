@@ -6,10 +6,9 @@ export class Apple extends NodeCell {
 	public size = new Vector2(1, 1);
 
 
-	constructor() {
-		super({
-			isPickupable: true
-		});
+	//@ts-ignore
+	protected async _init(): Promise<void> {
+		await super._init({ isPickupable: true });
 	}
 
 

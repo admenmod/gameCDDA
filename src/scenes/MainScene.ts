@@ -1,7 +1,7 @@
 import type { LayersList } from '@ver/CanvasLayer';
 import type { Camera } from '@ver/Camera';
 import { Vector2 } from '@ver/Vector2';
-import type { Scene } from '@ver/Scene';
+import { Scene } from '@ver/Scene';
 import { MapParser } from '@ver/MapParser';
 import { KeyboardInputInterceptor } from '@ver/KeyboardInputInterceptor';
 import { KeymapperOfActions, MappingsMode } from '@ver/KeymapperOfActions';
@@ -19,16 +19,6 @@ import { touches, canvas, layers, gm, keyboardInputInterceptor } from '@/global'
 
 
 export class MainScene extends Node2D {
-	declare public tree: Scene.Tree<typeof MainScene.TREE>;
-
-	protected static readonly TREE = {
-		Apple: [Apple],
-		Player: [Player],
-		World: [World, { size: new Vector2(20, 20) }],
-		TileMap: [TileMap, new Vector2(1, 1)]
-	} as const;
-
-
 	public gridMap = new GridMap({
 		tile: new Vector2().set(gm.camera.pixelDensity),
 		size: gm.screen,
@@ -36,12 +26,6 @@ export class MainScene extends Node2D {
 	});
 
 	private popups: Popup[] = [];
-
-
-	private get apple() { return this.tree.Apple; }
-	private get player() { return this.tree.Player; }
-	private get world() { return this.tree.World; }
-	private get tilemap() { return this.tree.TileMap; }
 
 
 	private systemInfoDrawObject = {
@@ -92,11 +76,91 @@ export class MainScene extends Node2D {
 	private normal_mode = new MappingsMode('normal');
 
 
-	protected async _init(): Promise<void> {
+	public static TREE = {
+		World: World,
+		TileMap: TileMap,
+		Player: Player,
+		Apple: Apple
+	};
+	declare public tree: Scene.Tree<typeof MainScene>;
+
+
+	public static map: MapParser.Map;
+
+	public static async _load(): Promise<void> {
+		this.map = await MapParser.instance().loadMap('maps/test-map.json');
+	}
+
+	private get world() { return this.tree.World; }
+	private get tilemap() { return this.tree.TileMap; }
+	private get player() { return this.tree.Player; }
+	private get apple() { return this.tree.Apple; }
+
+	//@ts-ignore
+	public async _init(): Promise<void> {
+		await Promise.all([
+			this.tree.World.init({ size: new Vector2(20, 20) }),
+			this.tree.TileMap.init(MainScene.map),
+			this.tree.Player.init(),
+			this.tree.Apple.init()
+		]);
+
+
+		this.world.date.setHours(6);
+
+		this.player.cellpos.set(8, 8);
+		this.apple.cellpos.set(6, 6);
+
+
+		const tilemap = this.tilemap.map;
+		console.log(tilemap);
+
+
+		const layer = tilemap.layers[0];
+		const oInits = [];
+		for(let i = 0; i < layer.data.length; i++) {
+			if(layer.data[i] === 0) continue;
+
+			const x = i % layer.width;
+			const y = Math.floor(i / layer.width);
+
+			const o = new NodeCell();
+
+			oInits.push(o.init({
+				isPickupable: false
+			}).then(() => {
+				o.cellpos.set(x, y);
+				this.world.addObject(o);
+			}));
+		}
+
+
+		this.player.cellpos.set(8, 8);
+		this.world.addObject(this.player);
+
+		this.apple.cellpos.set(6, 6);
+		this.world.addObject(this.apple);
+
+
 		this.keymapperOfActions = new KeymapperOfActions(this.normal_mode);
 		this.keymapperOfActions.init(keyboardInputInterceptor);
 
 
+		const updateOnResize = (size: Vector2) => {
+			this.gridMap.size.set(size);
+
+			// layers.main.beginPath();
+			// layers.main.rect(gm.camera.position.x, gm.camera.position.y, gm.camera.size.x, gm.camera.size.y);
+			// layers.main.clip();
+		};
+
+		updateOnResize(gm.screen);
+
+		gm.on('resize', updateOnResize);
+		gm.on('camera.scale', scale => this.gridMap.scale.set(scale));
+	}
+
+	protected _ready(): void {
 		const onmappings: KeymapperOfActions.Action = ({ mapping }) => {
 			let text: string = '';
 
@@ -153,68 +217,12 @@ export class MainScene extends Node2D {
 		this.normal_mode.register(['d'], () => {
 			this.player.tryPutfromHandsTo(Vector2.UP);
 		});
-
-
-
-		const map = await MapParser.instance().loadMap('maps/test-map.json');
-		this.tree.TileMap.setMap(map);
-
-
-		const updateOnResize = (size: Vector2) => {
-			this.gridMap.size.set(size);
-
-			// layers.main.beginPath();
-			// layers.main.rect(gm.camera.position.x, gm.camera.position.y, gm.camera.size.x, gm.camera.size.y);
-			// layers.main.clip();
-		};
-
-		updateOnResize(gm.screen);
-
-		gm.on('resize', updateOnResize);
-		gm.on('camera.scale', scale => this.gridMap.scale.set(scale));
-	}
-
-	protected _ready(): void {
-		this.world.date.setHours(6);
-
-		this.player.cellpos.set(8, 8);
-		this.apple.cellpos.set(6, 6);
-
-
-		const tilemap = this.tilemap.getMap()!;
-		console.log(tilemap);
-
-
-		const layer = tilemap.layers[0];
-
-		for(let i = 0; i < layer.data.length; i++) {
-			if(layer.data[i] === 0) continue;
-
-			const x = i % layer.width;
-			const y = Math.floor(i / layer.width);
-
-			const o = new NodeCell({
-				isPickupable: false
-			});
-
-			o.cellpos.set(x, y);
-			o.init();
-
-			this.world.addObject(o);
-		}
-
-
-		this.player.cellpos.set(8, 8);
-		this.world.addObject(this.player);
-
-		this.apple.cellpos.set(6, 6);
-		this.world.addObject(this.apple);
 	}
 
 	protected _process(dt: number): void {
 		this.keymapperOfActions.update(dt);
 
-		const player = this.tree.Player;
+		const player = this.player;
 
 		gm.camera.position.moveTime(player.position, 10);
 		// gm.camera.position.moveTime(player.globalPosition, 10);

@@ -18,7 +18,6 @@ export class Node2D extends Node {
 	//
 	// public zAsRelative: boolean = true;
 
-	constructor() { super(); }
 
 	/*
 	public get globalPosition(): Vector2 { return this.getRelativePosition(Node.MAX_NESTING); }
@@ -119,7 +118,7 @@ export class Node2D extends Node {
 	// 	super.render(layers, camera);
 	// }
 
-	public render(this: Node2D, layers: LayersList, camera: Camera): void {
+	protected _render(layers: LayersList, camera: Camera): void {
 		this._draw(layers.main,
 			this.getDrawPosition(camera),
 			this.scale.buf().inc(camera.scale),
@@ -127,6 +126,6 @@ export class Node2D extends Node {
 			camera.pixelDensity
 		);
 
-		super.render(layers, camera);
+		super._render(layers, camera);
 	}
 }

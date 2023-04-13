@@ -51,8 +51,6 @@ export const gm = new class GameManager extends EventDispatcher {
 	public screen = new Vector2(canvas.size);
 	public camera = new SensorCamera(new Camera(this.screen, 30));
 
-	public main_scene!: Scene;
-
 
 	constructor() {
 		super();
@@ -70,14 +68,14 @@ export const gm = new class GameManager extends EventDispatcher {
 }
 
 
-gm.main_scene = new MainScene();
+export const main_scene = new MainScene();
 
 
 const mainLoop = new MainLoop();
 
 mainLoop.on('update', dt => {
-	gm.main_scene.process(dt);
-	gm.main_scene.render(layers, gm.camera);
+	main_scene.process(dt);
+	main_scene.render(layers, gm.camera);
 
 	touches.nullify();
 });
@@ -85,6 +83,6 @@ mainLoop.on('update', dt => {
 mainLoop.start();
 
 
-gm.main_scene.load().then(() => {
-	gm.main_scene.init();
+MainScene.load().then(() => {
+	main_scene.init();
 });

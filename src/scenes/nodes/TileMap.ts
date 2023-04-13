@@ -8,19 +8,14 @@ export class TileMap extends Node2D {
 
 	private _cacheTile: { [id: number]: MapParser.Tileset } = {};
 
-	private map: MapParser.Map | null = null;
+	public map!: MapParser.Map;
 
-	constructor(size?: Vector2) {
-		super();
-
+	//@ts-ignore
+	protected async _init(map: MapParser.Map, size?: Vector2): Promise<void> {
+		this.map = map;
 		if(size) this.size.set(size);
 	}
 
-	public getMap(): MapParser.Map | null { return this.map; }
-	public setMap(map: MapParser.Map): void {
-		this.map = map;
-		this._cacheTile = {};
-	}
 
 	protected _draw(ctx: CanvasRenderingContext2D, pos: Vector2, scale: Vector2, rot: number, pixelDensity: number): void {
 		if(!this.map) return;

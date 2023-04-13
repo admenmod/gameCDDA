@@ -90,21 +90,19 @@ export class EventDispatcher {
 }
 
 
-type primitive_t = string | number | symbol;
-
 export class EventEmitter {
-	protected _events!: { [type: primitive_t]: FnOnce[] & { store: any } };
+	protected _events!: { [type: PropertyKey]: FnOnce[] & { store: any } };
 
 	constructor(public isUseStore: boolean = false) {
 		Object.defineProperty(this, '_events', { value: {} });
 	}
 
-	public once<args_t extends any[] = any[]>(type: primitive_t, fn: FnOnce<any, args_t>) {
+	public once<args_t extends any[] = any[]>(type: PropertyKey, fn: FnOnce<any, args_t>) {
 		fn[isOnceSymbol] = true;
 		return this.on(type, fn);
 	}
 
-	public on<args_t extends any[] = any[]>(type: primitive_t, fn: FnOnce<any, args_t>) {
+	public on<args_t extends any[] = any[]>(type: PropertyKey, fn: FnOnce<any, args_t>) {
 		if(!this._events[type]) {
 			(this._events[type] as any) = [];
 
@@ -120,7 +118,7 @@ export class EventEmitter {
 		return this;
 	}
 
-	public off<args_t extends any[] = any[]>(type: primitive_t, fn: FnOnce<any, args_t>) {
+	public off<args_t extends any[] = any[]>(type: PropertyKey, fn: FnOnce<any, args_t>) {
 		if(!type) for(let i in this._events) delete this._events[i];
 		else if(!this._events[type]) return this;
 		else if(!fn) delete this._events[type];
@@ -132,7 +130,7 @@ export class EventEmitter {
 		return this;
 	}
 
-	public emit<args_t extends any[] = any[]>(type: primitive_t, ...args: args_t) {
+	public emit<args_t extends any[] = any[]>(type: PropertyKey, ...args: args_t) {
 		if(!this._events[type]) return false;
 
 		for(let i = 0; i < this._events[type].length; i++) {
@@ -144,7 +142,7 @@ export class EventEmitter {
 	}
 
 	//@ts-ignore
-	public remove<args_t extends any[] = any[]>(type: primitive_t, fn: FnOnce<any, args_t>): this;
+	public remove<args_t extends any[] = any[]>(type: PropertyKey, fn: FnOnce<any, args_t>): this;
 }
 
 Object.defineProperty(EventEmitter.prototype, 'remove', {
