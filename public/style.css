@@ -19,3 +19,12 @@ canvas-layer {
 	height: 100vh;
 	background: #333333;
 }
+
+.help-popup {
+	display: grid;
+	align-items: center;
+	justify-items: center;
+	background-color: #222222;
+	opacity: 0.9;
+	font-family: arkhip;
+}

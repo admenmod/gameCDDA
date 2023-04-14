@@ -209,14 +209,40 @@ export class MainScene extends Node2D {
 		this.normal_mode.register(['ArrowRight'], () => this.player.move(Vector2.RIGHT));
 
 
-		this.normal_mode.register(['w'], () => {
-			const o = this.world.getObjectCellUp(this.player.cellpos.buf().add(0, -1));
-			if(o) this.player.tryPickup(o);
-		});
 
-		this.normal_mode.register(['d'], () => {
-			this.player.tryPutfromHandsTo(Vector2.UP);
-		});
+		const map_pikeup: KeymapperOfActions.Action = mapping => {
+			const dir = new Vector2();
+
+			if(mapping.mapping[1] === 'ArrowUp') dir.set(0, -1);
+			else if(mapping.mapping[1] === 'ArrowDown') dir.set(0, 1);
+			else if(mapping.mapping[1] === 'ArrowLeft') dir.set(-1, 0);
+			else if(mapping.mapping[1] === 'ArrowRight') dir.set(1, 0);
+
+			const o = this.world.getObjectCellUp(this.player.cellpos.buf().add(dir));
+			if(o) this.player.tryPickup(o);
+		};
+
+		this.normal_mode.register(['w', 'ArrowUp'], map_pikeup);
+		this.normal_mode.register(['w', 'ArrowDown'], map_pikeup);
+		this.normal_mode.register(['w', 'ArrowLeft'], map_pikeup);
+		this.normal_mode.register(['w', 'ArrowRight'], map_pikeup);
+
+
+		const map_put: KeymapperOfActions.Action = mapping => {
+			const dir = new Vector2();
+
+			if(mapping.mapping[1] === 'ArrowUp') dir.set(0, -1);
+			else if(mapping.mapping[1] === 'ArrowDown') dir.set(0, 1);
+			else if(mapping.mapping[1] === 'ArrowLeft') dir.set(-1, 0);
+			else if(mapping.mapping[1] === 'ArrowRight') dir.set(1, 0);
+
+			this.player.tryPutfromHandsTo(dir);
+		};
+
+		this.normal_mode.register(['d', 'ArrowUp'], map_put);
+		this.normal_mode.register(['d', 'ArrowDown'], map_put);
+		this.normal_mode.register(['d', 'ArrowLeft'], map_put);
+		this.normal_mode.register(['d', 'ArrowRight'], map_put);
 	}
 
 	protected _process(dt: number): void {

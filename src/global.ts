@@ -19,6 +19,17 @@ if(!appElement) throw new Error('app is not found');
 export const canvas = new CanvasLayer();
 appElement.append(canvas);
 
+const helpPopup = document.createElement('div');
+helpPopup.classList.add('help-popup');
+helpPopup.innerHTML += `<span>
+w + Arrow - взять в руки <br>
+d + Arrow - выбросить предмет в руках <br>
+<br>
+dblclick - полноэкранный режим
+</span>`;
+canvas.append(helpPopup);
+helpPopup.ondblclick = () => helpPopup.remove();
+
 //@ts-ignore
 canvas.ondblclick = () => canvas.webkitRequestFullscreen();
 

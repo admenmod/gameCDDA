@@ -48,8 +48,8 @@ display: grid;
 width: 100%; height: 100%;
 overflow: auto;
 grid-area: 1/1/1/1;
-align-self: ${this.getAttribute('align-slot')||'center'};
-justify-self :${this.getAttribute('justify-slot')||'center'};
+align-self: ${this.getAttribute('align-slot') || 'center'};
+justify-self: ${this.getAttribute('justify-slot') || 'center'};
 "><slot></slot></div>`;
 
 		this.slotWrapper = root.querySelector<HTMLDivElement>('.slot')!;
