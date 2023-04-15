@@ -76,13 +76,12 @@ export class MainScene extends Node2D {
 	private normal_mode = new MappingsMode('normal');
 
 
-	public static TREE = {
+	public getTREE() { return {
 		World: World,
 		TileMap: TileMap,
 		Player: Player,
 		Apple: Apple
-	};
-	declare public tree: Scene.Tree<typeof MainScene>;
+	} as const; };
 
 
 	public static map: MapParser.Map;
@@ -91,18 +90,18 @@ export class MainScene extends Node2D {
 		this.map = await MapParser.instance().loadMap('maps/test-map.json');
 	}
 
-	private get world() { return this.tree.World; }
-	private get tilemap() { return this.tree.TileMap; }
-	private get player() { return this.tree.Player; }
-	private get apple() { return this.tree.Apple; }
+	private get world() { return this.get('World'); }
+	private get tilemap() { return this.get('TileMap'); }
+	private get player() { return this.get('Player'); }
+	private get apple() { return this.get('Apple'); }
 
 	//@ts-ignore
-	public async _init(): Promise<void> {
+	public async _init(this: MainScene): Promise<void> {
 		await Promise.all([
-			this.tree.World.init({ size: new Vector2(20, 20) }),
-			this.tree.TileMap.init(MainScene.map),
-			this.tree.Player.init(),
-			this.tree.Apple.init()
+			this.get('World').init({ size: new Vector2(20, 20) }),
+			this.get('TileMap').init(MainScene.map),
+			this.get('Player').init(),
+			this.get('Apple').init()
 		]);
 
 
@@ -133,6 +132,8 @@ export class MainScene extends Node2D {
 				this.world.addObject(o);
 			}));
 		}
+
+		await Promise.all([oInits]);
 
 
 		this.player.cellpos.set(8, 8);
@@ -245,7 +246,7 @@ export class MainScene extends Node2D {
 		this.normal_mode.register(['d', 'ArrowRight'], map_put);
 	}
 
-	protected _process(dt: number): void {
+	protected _process(this: MainScene, dt: number): void {
 		this.keymapperOfActions.update(dt);
 
 		const player = this.player;
@@ -276,7 +277,7 @@ export class MainScene extends Node2D {
 		this.systemInfoDrawObject.update(dt);
 	}
 
-	protected _render(layers: LayersList, camera: Camera): void {
+	protected _render(this: MainScene, layers: LayersList, camera: Camera): void {
 		layers.main.clearRect(0, 0, gm.screen.x, gm.screen.y);
 
 		this.gridMap.draw(layers.main, camera.getDrawPosition());

@@ -55,7 +55,7 @@ export class Joystick {
 				Math.min(l, this.radius-this.core.radius),
 				this.core.pos.getAngleRelative(this.touch)
 			);
-			
+
 			if(this.touch.isUp()) this.touch = null;
 		};
 		if(!this.touch) this.core.pos.moveTime(this.pos, 3);

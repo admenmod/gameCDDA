@@ -34,7 +34,7 @@ export class CanvasLayer extends HTMLElement {
 
 		this.style.cssText = `display: grid; align-items: center; justify-items: center;`;
 
-		root.innerHTML += 
+		root.innerHTML +=
 `<div class="layers" style="
 display: grid;
 width: 100%; height: 100%;

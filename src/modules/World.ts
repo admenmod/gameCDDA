@@ -15,12 +15,13 @@ export class World extends Node2D {
 	public all_nodes: NodeCell[] = [];
 
 
+	public enter_date: Date = new Date();
 	public date: Date = new Date();
 
 	//@ts-ignore
-	protected async _init(
-		p: { size: Vector2 }
-	): Promise<void> {
+	protected async _init(p: {
+		size: Vector2
+	}): Promise<void> {
 		this.size.set(p.size);
 	}
 
@@ -102,10 +103,6 @@ export class World extends Node2D {
 		return node1.cellpos.getDistance(node2.cellpos);
 	}
 
-
-	// protected async _load(): Promise<void> {
-	// 	await Promise.all(this.all_nodes.map(i => i.()));
-	// }
 
 	protected _process(dt: number): void {
 		for(let i = 0; i < this.all_nodes.length; i++) {

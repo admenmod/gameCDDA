@@ -5,11 +5,8 @@ import type { getInstanceOf } from '@ver/types';
 
 type Layers = Record<string, CanvasRenderingContext2D>;
 
-
-export declare namespace Scene {
-	export type Tree<T extends { TREE: Record<string, typeof Scene> }> =
-		{ [K in keyof T['TREE']]: getInstanceOf<T['TREE'][K]>; };
-}
+//@ts-ignore
+type getTree<T> =  { [K in keyof ReturnType<T>]: getInstanceOf<ReturnType<T>[K]>; };
 
 export class Scene extends EventDispatcher {
 	protected readonly _class: typeof Scene;
@@ -21,8 +18,14 @@ export class Scene extends EventDispatcher {
 	public get name() { return this._name; }
 
 
-	public static TREE: Record<string, typeof Scene> = {};
-	public tree: Record<string, Scene> = Object.create(null);
+	protected static _TREE: Record<string, typeof Scene>;
+	protected _tree: Record<string, Scene> = Object.create(null);
+
+	public getTREE(): Record<string, typeof Scene> { return Object.create(null); };
+	public get<Name extends keyof getTree<this['getTREE']>>(name: Name): getTree<this['getTREE']>[Name] {
+		//@ts-ignore
+		return this._tree[name];
+	}
 
 
 	protected _isReady: boolean = false;
@@ -45,12 +48,14 @@ export class Scene extends EventDispatcher {
 	}
 
 	private _init_tree(): void {
-		for(const id in this._class.TREE) {
-			const s = this._class.TREE[id];
+		if(!this._class._TREE) this._class._TREE = this.getTREE();
 
-			this.tree[id] = new s();
-			this.tree[id]._owner = this;
-			this.tree[id]._name = id;
+		for(const id in this._class._TREE) {
+			const s = this._class._TREE[id];
+
+			this._tree[id] = new s();
+			this._tree[id]._owner = this;
+			this._tree[id]._name = id;
 		}
 	}
 
@@ -71,13 +76,13 @@ export class Scene extends EventDispatcher {
 
 		this._ready();
 
-		for(const id in this.tree) this.tree[id].ready();
+		for(const id in this._tree) this._tree[id].ready();
 
 		this._isReady = true;
 	}
 
 	//@ts-ignore
-    public async init<This>(this: This, ...args: Parameters<This['_init']>): Promise<void>;
+    public async init(...args: Parameters<this['_init']>): Promise<void>;
     public async init(...args: never[]): Promise<void> {
 		if(this._isInited || !this.isLoaded) return;
 
@@ -90,7 +95,7 @@ export class Scene extends EventDispatcher {
 	}
 
 	//@ts-ignore
-    public async exit<This>(this: This, ...args: Parameters<This['_exit']>): Promise<void>;
+    public async exit(...args: Parameters<this['_exit']>): Promise<void>;
     public async exit(...args: never[]): Promise<void> {
 		if(this._isExited || this.isUnloaded) return;
 
@@ -102,7 +107,7 @@ export class Scene extends EventDispatcher {
 
 
 	//@ts-ignore
-    public process<This>(this: This, ...args: Parameters<This['_process']>): void;
+    public process(...args: Parameters<this['_process']>): void;
     public process(...args: never[]): void {
 		if(!this._isInited) return;
 
@@ -130,33 +135,40 @@ export class Scene extends EventDispatcher {
 	protected static async _unload(...args: never[]): Promise<void> {}
 
 
+	public static '@load' = new Event<typeof Scene, [Scene: typeof Scene]>(this);
+	public static '@unload' = new Event<typeof Scene, [Scene: typeof Scene]>(this);
+
 	//@ts-ignore
-    public static async load<This>(this: This, ...args: Parameters<This['_load']>): Promise<void>;
+    public static async load(...args: Parameters<this['_load']>): Promise<void>;
     public static async load(...args: never[]): Promise<void> {
 		if(this._isLoaded) return;
 
 		await this._load(...args);
 
 		const proms = [];
-		for(const id in this.TREE) proms.push(this.TREE[id].load());
+		for(const id in this._TREE) proms.push(this._TREE[id].load());
 		await Promise.all(proms);
 
 		this._isLoaded = true;
 		this._isUnloaded = false;
+
+		this.emit('load', this);
 	}
 
 	//@ts-ignore
-    public static async unload<This>(this: This, ...args: Parameters<This['_unload']>): Promise<void>;
+    public static async unload(...args: Parameters<this['_unload']>): Promise<void>;
     public static async unload(...args: never[]): Promise<void> {
 		if(this._isUnloaded) return;
 
 		await this._unload(...args);
 
 		const proms = [];
-		for(const id in this.TREE) proms.push(this.TREE[id].unload());
+		for(const id in this._TREE) proms.push(this._TREE[id].unload());
 		await Promise.all(proms);
 
 		this._isUnloaded = true;
 		this._isLoaded = false;
+
+		this.emit('unload', this);
 	}
 }

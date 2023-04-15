@@ -20,7 +20,6 @@ export class NodeCell extends Node2D {
 	public isPickupable!: boolean;
 	public inHands: NodeCell | null = null;
 
-
 	//@ts-ignore
 	protected async _init(p: {
 		isPickupable: boolean

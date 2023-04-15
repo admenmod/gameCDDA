@@ -38,7 +38,7 @@ export class GridMap {
 		const tile = this.tile.buf().inc(this.scale);
 
 		const mar = pos.buf().mod(tile);
-		const counts = this.size.buf().add(mar).div(tile); 
+		const counts = this.size.buf().add(mar).div(tile);
 
 		// ctx.save();
 		// ctx.fillStyle = `rgb(${Math.random()*255}, 100, 100)`;

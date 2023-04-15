@@ -11,6 +11,36 @@ export const roundLoop = (value: number, min: number, max: number) => {
 };
 
 
+export type namespace = Record<PropertyKey, any>;
+export const NameSpace = function(namespace: namespace | null = null): namespace {
+	return Object.create(namespace);
+}
+
+Object.defineProperty(NameSpace, Symbol.hasInstance, {
+	configurable: true,
+	//@ts-ignore
+	value: (o: namespace) => o.__proto__ !== Object.getPrototypeOf(o)
+});
+
+
+export type symbolspace = Record<PropertyKey, symbol>;
+type s = ((id: PropertyKey) => symbol) & { space: symbolspace };
+export interface SymbolSpace {
+	new (): s;
+	new (symbolspace: symbolspace): s;
+	(): s;
+	(symbolspace: symbolspace): s;
+}
+
+//@ts-ignore
+export const SymbolSpace: SymbolSpace = function(symbolspace: any = null) {
+	const space: symbolspace = Object.create(symbolspace);
+	const s = (id: PropertyKey) => space[id] || (space[id] = Symbol(id.toString()));
+	s.space = space;
+	return s;
+}
+
+
 type Image = HTMLImageElement;
 
 type cb_t = (ctx: CanvasRenderingContext2D, size: Vector2) => void;
