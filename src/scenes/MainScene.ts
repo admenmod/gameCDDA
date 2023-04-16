@@ -76,7 +76,7 @@ export class MainScene extends Node2D {
 	private normal_mode = new MappingsMode('normal');
 
 
-	public getTREE() { return {
+	public TREE() { return {
 		World: World,
 		TileMap: TileMap,
 		Player: Player,
@@ -87,6 +87,7 @@ export class MainScene extends Node2D {
 	public static map: MapParser.Map;
 
 	public static async _load(): Promise<void> {
+		await NodeCell.load();
 		this.map = await MapParser.instance().loadMap('maps/test-map.json');
 	}
 

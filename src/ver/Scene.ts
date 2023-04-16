@@ -6,7 +6,7 @@ import type { getInstanceOf } from '@ver/types';
 type Layers = Record<string, CanvasRenderingContext2D>;
 
 //@ts-ignore
-type getTree<T> =  { [K in keyof ReturnType<T>]: getInstanceOf<ReturnType<T>[K]>; };
+type getTree<T> = { [K in keyof ReturnType<T['TREE']>]: getInstanceOf<ReturnType<T['TREE']>[K]>; };
 
 export class Scene extends EventDispatcher {
 	protected readonly _class: typeof Scene;
@@ -19,12 +19,15 @@ export class Scene extends EventDispatcher {
 
 
 	protected static _TREE: Record<string, typeof Scene>;
-	protected _tree: Record<string, Scene> = Object.create(null);
+	protected tree: Record<string, Scene> = Object.create(null);
 
-	public getTREE(): Record<string, typeof Scene> { return Object.create(null); };
-	public get<Name extends keyof getTree<this['getTREE']>>(name: Name): getTree<this['getTREE']>[Name] {
-		//@ts-ignore
-		return this._tree[name];
+	public TREE(): Record<string, typeof Scene> { return Object.create(null); };
+
+	public get(): getTree<this>;
+	public get<Name extends keyof getTree<this>>(name: Name): getTree<this>[Name];
+	public get(name: any = null) {
+		if(name === null) return this.tree;
+		return this.tree[name];
 	}
 
 
@@ -48,14 +51,14 @@ export class Scene extends EventDispatcher {
 	}
 
 	private _init_tree(): void {
-		if(!this._class._TREE) this._class._TREE = this.getTREE();
+		if(!this.isLoaded) throw new Error(`(${this.name}) you can't instantiate a scene before it's loaded`);
 
 		for(const id in this._class._TREE) {
 			const s = this._class._TREE[id];
 
-			this._tree[id] = new s();
-			this._tree[id]._owner = this;
-			this._tree[id]._name = id;
+			this.tree[id] = new s();
+			this.tree[id]._owner = this;
+			this.tree[id]._name = id;
 		}
 	}
 
@@ -76,7 +79,7 @@ export class Scene extends EventDispatcher {
 
 		this._ready();
 
-		for(const id in this._tree) this._tree[id].ready();
+		for(const id in this.tree) this.tree[id].ready();
 
 		this._isReady = true;
 	}
@@ -143,6 +146,8 @@ export class Scene extends EventDispatcher {
     public static async load(...args: never[]): Promise<void> {
 		if(this._isLoaded) return;
 
+		if(!this._TREE) this._TREE = this.prototype.TREE.call(null);
+
 		await this._load(...args);
 
 		const proms = [];
@@ -161,10 +166,6 @@ export class Scene extends EventDispatcher {
 		if(this._isUnloaded) return;
 
 		await this._unload(...args);
-
-		const proms = [];
-		for(const id in this._TREE) proms.push(this._TREE[id].unload());
-		await Promise.all(proms);
 
 		this._isUnloaded = true;
 		this._isLoaded = false;

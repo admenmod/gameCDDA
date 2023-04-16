@@ -41,7 +41,7 @@ export class Event<This = any, Args extends any[] = any[]> {
 type event_name<T extends string = string> = `@${T}`;
 
 type KeysEvents<T extends object> = ({
-	[K in keyof T]: T[K] extends Event ? K extends event_name ? K : never : never
+	[K in keyof T]: K extends event_name ? T[K] extends Event ? K : never : never
 })[keyof T];
 
 type getEventArgs<T extends object, K extends KeysEvents<T>> =

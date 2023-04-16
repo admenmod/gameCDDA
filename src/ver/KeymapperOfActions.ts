@@ -1,7 +1,7 @@
 import { EventDispatcher, Event } from './events';
 import type { KeyboardInputInterceptor } from './KeyboardInputInterceptor';
 
-type mode_t = string | symbol;
+type mode_t = PropertyKey;
 type mapping_t = string[];
 type action_t = (mapping: Mapping) => any;
 
@@ -167,6 +167,8 @@ export class KeymapperOfActions extends EventDispatcher {
 
 		this.emit('register', mode, mapping, action);
 	}
+
+	public getMode(mode: mode_t) { return this.mapmap[mode]; }
 
 	public setMode(this: KeymapperOfActions, mode: mode_t | MappingsMode) {
 		if(typeof mode === 'object') {

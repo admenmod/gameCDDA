@@ -67,7 +67,7 @@ export const generateImage: generateImage_t = (w, h, cb) => new Promise((res, re
 	img.onerror = e => rej(e);
 });
 
-export const loadImage = (src: string, w: number, h: number): Promise<Image> => new Promise((res, rej) => {
+export const loadImage = (src: string, w?: number, h?: number): Promise<Image> => new Promise((res, rej) => {
 	const el = new Image(w, h);
 	el.src = src;
 	el.onload = e => res(el);

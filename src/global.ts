@@ -79,9 +79,6 @@ export const gm = new class GameManager extends EventDispatcher {
 }
 
 
-export const main_scene = new MainScene();
-
-
 const mainLoop = new MainLoop();
 
 mainLoop.on('update', dt => {
@@ -91,9 +88,12 @@ mainLoop.on('update', dt => {
 	touches.nullify();
 });
 
-mainLoop.start();
 
+export let main_scene: MainScene;
 
 MainScene.load().then(() => {
+	main_scene = new MainScene();
 	main_scene.init();
+
+	mainLoop.start();
 });
