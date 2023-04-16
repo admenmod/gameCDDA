@@ -21,7 +21,7 @@ export class Scene extends EventDispatcher {
 	protected static _TREE: Record<string, typeof Scene>;
 	protected tree: Record<string, Scene> = Object.create(null);
 
-	public TREE(): Record<string, typeof Scene> { return Object.create(null); };
+	public TREE(): Record<string, typeof Scene> { return {}; };
 
 	public get(): getTree<this>;
 	public get<Name extends keyof getTree<this>>(name: Name): getTree<this>[Name];
@@ -128,6 +128,18 @@ export class Scene extends EventDispatcher {
 	}
 
 
+	private static _init_TREE(path: any[] = [], target_error: any = this.name): void {
+		if(!this._TREE) this._TREE = this.prototype.TREE.call(null);
+
+		if(path.includes(this._TREE)) {
+			throw new Error(`cyclic dependence found "${this.name} -> ... -> ${target_error} -> ${this.name}"`);
+		}
+
+		for(let id in this._TREE) {
+			this._TREE[id]._init_TREE([...path, this._TREE], this.name);
+		}
+	}
+
 	protected static _isLoaded: boolean = false;
 	protected static _isUnloaded: boolean = true;
 
@@ -146,7 +158,7 @@ export class Scene extends EventDispatcher {
     public static async load(...args: never[]): Promise<void> {
 		if(this._isLoaded) return;
 
-		if(!this._TREE) this._TREE = this.prototype.TREE.call(null);
+		this._init_TREE();
 
 		await this._load(...args);
 
