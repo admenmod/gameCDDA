@@ -80,7 +80,11 @@ export class MainScene extends Node2D {
 		World: World,
 		TileMap: TileMap,
 		Player: Player,
-		Apple: Apple
+		Apple1: Apple,
+		Apple2: Apple,
+		Apple3: Apple,
+		Apple4: Apple,
+		Apple5: Apple
 	} as const; };
 
 
@@ -98,7 +102,12 @@ export class MainScene extends Node2D {
 	private get world() { return this.get('World'); }
 	private get tilemap() { return this.get('TileMap'); }
 	private get player() { return this.get('Player'); }
-	private get apple() { return this.get('Apple'); }
+
+	private get apple1() { return this.get('Apple1'); }
+	private get apple2() { return this.get('Apple2'); }
+	private get apple3() { return this.get('Apple3'); }
+	private get apple4() { return this.get('Apple4'); }
+	private get apple5() { return this.get('Apple5'); }
 
 	//@ts-ignore
 	public async _init(this: MainScene): Promise<void> {
@@ -106,14 +115,34 @@ export class MainScene extends Node2D {
 			this.get('World').init({ size: new Vector2(20, 20) }),
 			this.get('TileMap').init(MainScene.map),
 			this.get('Player').init(),
-			this.get('Apple').init()
+
+			this.get('Apple1').init(),
+			this.get('Apple2').init(),
+			this.get('Apple3').init(),
+			this.get('Apple4').init(),
+			this.get('Apple5').init()
 		]);
 
 
 		this.world.date.setHours(6);
 
 		this.player.cellpos.set(8, 8);
-		this.apple.cellpos.set(6, 6);
+
+		this.apple1.cellpos.set(6, 6);
+		this.apple2.cellpos.set(7, 6);
+		this.apple3.cellpos.set(6, 7);
+		this.apple4.cellpos.set(5, 6);
+		this.apple5.cellpos.set(6, 5);
+
+
+		this.world.addObject(this.player);
+
+		this.world.addObject(this.apple1);
+		this.world.addObject(this.apple2);
+		this.world.addObject(this.apple3);
+		this.world.addObject(this.apple4);
+		this.world.addObject(this.apple5);
+
 
 
 		const tilemap = this.tilemap.map;
@@ -141,13 +170,6 @@ export class MainScene extends Node2D {
 		}
 
 		await Promise.all([oInits]);
-
-
-		this.player.cellpos.set(8, 8);
-		this.world.addObject(this.player);
-
-		this.apple.cellpos.set(6, 6);
-		this.world.addObject(this.apple);
 
 
 		this.keymapperOfActions = new KeymapperOfActions(this.normal_mode);

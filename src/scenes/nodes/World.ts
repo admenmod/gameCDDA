@@ -83,6 +83,8 @@ export class World extends Node2D {
 	public hasPickUp(node1: NodeCell, node2: NodeCell): boolean {
 		if(node1 === node2) throw new Error('node1 === node2');
 
+		if(node1.inHands) return false;
+
 		if(this.getDistance(node1, node2) > 2) return false;
 
 		if(!node2.isPickupable) return false;

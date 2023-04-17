@@ -5,8 +5,9 @@ import type { getInstanceOf } from '@ver/types';
 
 type Layers = Record<string, CanvasRenderingContext2D>;
 
-//@ts-ignore
-type getTree<T> = { [K in keyof ReturnType<T['TREE']>]: getInstanceOf<ReturnType<T['TREE']>[K]>; };
+type getTree<T extends Scene> = { [K in keyof ReturnType<T['TREE']>]: getInstanceOf<ReturnType<T['TREE']>[K]>; };
+
+type splice0_t<T> = T extends [infer _, ...infer R] ? R : never;
 
 export class Scene extends EventDispatcher {
 	protected readonly _class: typeof Scene;
@@ -16,6 +17,14 @@ export class Scene extends EventDispatcher {
 
 	private _name: string = this.constructor.name;
 	public get name() { return this._name; }
+
+
+	public '@init' = new Event<Scene, never[]>(this);
+	public '@exit' = new Event<Scene, never[]>(this);
+	public '@ready' = new Event<Scene, never[]>(this);
+
+	public '@process' = new Event<Scene, [number, ...never[]]>(this);
+	public '@render' = new Event<Scene, [Layers, Camera, ...never[]]>(this);
 
 
 	protected static _TREE: Record<string, typeof Scene>;
@@ -82,6 +91,8 @@ export class Scene extends EventDispatcher {
 		for(const id in this.tree) this.tree[id].ready();
 
 		this._isReady = true;
+
+		(this as Scene).emit('ready');
 	}
 
 	//@ts-ignore
@@ -95,6 +106,8 @@ export class Scene extends EventDispatcher {
 		this._isExited = false;
 
 		if(this._owner === null) this.ready();
+
+		(this as Scene).emit('init', ...args);
 	}
 
 	//@ts-ignore
@@ -106,6 +119,8 @@ export class Scene extends EventDispatcher {
 
 		this._isExited = true;
 		this._isInited = false;
+
+		(this as Scene).emit('exit', ...args);
 	}
 
 
@@ -116,6 +131,8 @@ export class Scene extends EventDispatcher {
 
 		//@ts-ignore
 		this._process(...args);
+		//@ts-ignore
+		this['@process'].emit(...args);
 	}
 
 	//@ts-ignore
@@ -125,6 +142,8 @@ export class Scene extends EventDispatcher {
 
 		//@ts-ignore
 		this._render(...args);
+		//@ts-ignore
+		this['@render'].emit(...args);
 	}
 
 
@@ -146,42 +165,48 @@ export class Scene extends EventDispatcher {
 	public static get isLoaded(): boolean { return this._isLoaded; }
 	public static get isUnloaded(): boolean { return this._isUnloaded; }
 
-	protected static async _load(...args: never[]): Promise<void> {}
-	protected static async _unload(...args: never[]): Promise<void> {}
+	protected static async _load(scene: typeof Scene, ...args: never[]): Promise<void> {}
+	protected static async _unload(scene: typeof Scene, ...args: never[]): Promise<void> {}
 
 
-	public static '@load' = new Event<typeof Scene, [Scene: typeof Scene]>(this);
-	public static '@unload' = new Event<typeof Scene, [Scene: typeof Scene]>(this);
+	public static '@load' = new Event<typeof Scene, [typeof Scene, ...never[]]>(this);
+	public static '@unload' = new Event<typeof Scene, [typeof Scene, ...never[]]>(this);
 
 	//@ts-ignore
-    public static async load<This extends typeof Scene>(this: This, ...args: Parameters<This['_load']>): Promise<void>;
+    public static async load<This extends typeof Scene>(this: This, ...args: splice0_t<[...Parameters<This['_load']>]>): Promise<void>;
     public static async load(...args: never[]): Promise<void> {
 		if(this._isLoaded) return;
 
 		this._init_TREE();
 
-		await this._load(...args);
+		await this._load(this, ...args);
 
 		const proms = [];
-		for(const id in this._TREE) proms.push(this._TREE[id].load());
+		const cache: any = [];
+		for(const id in this._TREE) {
+			if(!cache.includes(this._TREE[id])) {
+				cache.push(this._TREE[id]);
+				if(!this._TREE[id]._isLoaded && this._TREE[id]._isUnloaded) proms.push(this._TREE[id].load());
+			}
+		}
 		await Promise.all(proms);
 
 		this._isLoaded = true;
 		this._isUnloaded = false;
 
-		this.emit('load', this);
+		this.emit('load', this, ...args);
 	}
 
 	//@ts-ignore
-    public static async unload<This extends typeof Scene>(this: This, ...args: Parameters<This['_unload']>): Promise<void>;
+    public static async unload<This extends typeof Scene>(this: This, ...args: splice0_t<Parameters<This['_unload']>>): Promise<void>;
     public static async unload(...args: never[]): Promise<void> {
 		if(this._isUnloaded) return;
 
-		await this._unload(...args);
+		await this._unload(this, ...args);
 
 		this._isUnloaded = true;
 		this._isLoaded = false;
 
-		this.emit('unload', this);
+		this.emit('unload', this, ...args);
 	}
 }
