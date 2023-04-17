@@ -15,12 +15,10 @@ export class Popup extends Node2D {
 
 	private _catchTextMetrics: TextMetrics | null = null;
 
-	constructor(p: {
+	protected async _init(p: {
 		text: string,
 		pos?: Vector2
-	}) {
-		super();
-
+	}): Promise<void> {
 		this.text = p.text;
 		this.position.set(p.pos || new Vector2());
 	}

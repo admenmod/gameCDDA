@@ -26,6 +26,7 @@ export class TileMap extends Node2D {
 
 		for(let i = 0; i < map.layers.length; i++) {
 			const layer = map.layers[i];
+			if(layer.type !== 'tilelayer') continue;
 
 			if(!layer.visible) continue;
 

@@ -85,7 +85,7 @@ export class Scene extends EventDispatcher {
 	}
 
 	//@ts-ignore
-    public async init(...args: Parameters<this['_init']>): Promise<void>;
+    public async init<This extends Scene>(this: This, ...args: Parameters<This['_init']>): Promise<void>;
     public async init(...args: never[]): Promise<void> {
 		if(this._isInited || !this.isLoaded) return;
 
@@ -98,7 +98,7 @@ export class Scene extends EventDispatcher {
 	}
 
 	//@ts-ignore
-    public async exit(...args: Parameters<this['_exit']>): Promise<void>;
+    public async exit<This extends Scene>(this: This, ...args: Parameters<This['_exit']>): Promise<void>;
     public async exit(...args: never[]): Promise<void> {
 		if(this._isExited || this.isUnloaded) return;
 
@@ -110,7 +110,7 @@ export class Scene extends EventDispatcher {
 
 
 	//@ts-ignore
-    public process(...args: Parameters<this['_process']>): void;
+    public process<This extends Scene>(this: This, ...args: Parameters<This['_process']>): void;
     public process(...args: never[]): void {
 		if(!this._isInited) return;
 
@@ -119,7 +119,7 @@ export class Scene extends EventDispatcher {
 	}
 
 	//@ts-ignore
-    public render<This>(this: This, ...args: Parameters<This['_render']>): void;
+    public render<This extends Scene>(this: This, ...args: Parameters<This['_render']>): void;
     public render(...args: never[]): void {
 		if(!this._isInited) return;
 
@@ -154,7 +154,7 @@ export class Scene extends EventDispatcher {
 	public static '@unload' = new Event<typeof Scene, [Scene: typeof Scene]>(this);
 
 	//@ts-ignore
-    public static async load(...args: Parameters<this['_load']>): Promise<void>;
+    public static async load<This extends typeof Scene>(this: This, ...args: Parameters<This['_load']>): Promise<void>;
     public static async load(...args: never[]): Promise<void> {
 		if(this._isLoaded) return;
 
@@ -173,7 +173,7 @@ export class Scene extends EventDispatcher {
 	}
 
 	//@ts-ignore
-    public static async unload(...args: Parameters<this['_unload']>): Promise<void>;
+    public static async unload<This extends typeof Scene>(this: This, ...args: Parameters<This['_unload']>): Promise<void>;
     public static async unload(...args: never[]): Promise<void> {
 		if(this._isUnloaded) return;
 

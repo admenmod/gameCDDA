@@ -93,36 +93,41 @@ export class EventDispatcher {
 	}
 
 
-	public on<
-		Type extends ConvertDel<KeysEvents<this>>,
-		Args extends ArgsEvent<this, Type>
-	>(type: Type, fn: (this: this, ...args: Args) => any) {
-		((this as any)[`@${type}`] as Event<this, Args>).on(fn);
+	public on<This extends EventDispatcher,
+		Type extends ConvertDel<KeysEvents<This>>,
+		Args extends ArgsEvent<This, Type>
+	>(this: This, type: Type, fn: (this: This, ...args: Args) => any) {
+		//@ts-ignore
+		this[`@${type}`].on(fn);
 	}
 
-	public once<
-		Type extends ConvertDel<KeysEvents<this>>,
-		Args extends ArgsEvent<this, Type>
-	>(type: Type, fn: (this: this, ...args: Args) => any) {
-		((this as any)[`@${type}`] as Event<this, Args>).once(fn);
+	public once<This extends EventDispatcher,
+		Type extends ConvertDel<KeysEvents<This>>,
+		Args extends ArgsEvent<This, Type>
+	>(this: This, type: Type, fn: (this: This, ...args: Args) => any) {
+		//@ts-ignore
+		this[`@${type}`].once(fn);
 	}
 
-	public off<
+	public off<This extends EventDispatcher,
 		Type extends ConvertDel<KeysEvents<this>>,
 		Args extends ArgsEvent<this, Type>
-	>(type: Type, fn: (this: this, ...args: Args) => any) {
-		((this as any)[`@${type}`] as Event<this, Args>).off(fn);
+	>(this: This, type: Type, fn: (this: This, ...args: Args) => any) {
+		//@ts-ignore
+		this[`@${type}`].off(fn);
 	}
 
-	public emit<
-		Type extends ConvertDel<KeysEvents<this>>,
-		Args extends ArgsEvent<this, Type>
-	>(type: Type, ...args: Args) {
-		((this as any)[`@${type}`] as Event<this, Args>).emit(...args);
+	public emit<This extends EventDispatcher,
+		Type extends ConvertDel<KeysEvents<This>>,
+		Args extends ArgsEvent<This, Type>
+	>(this: This, type: Type, ...args: Args) {
+		//@ts-ignore
+		this[`@${type}`].emit(...args);
 	}
 
-	public clear<Type extends ConvertDel<KeysEvents<this>>>(type: Type) {
-		((this as any)[`@${type}`] as Event<this, any>).clear();
+	public clear<This extends EventDispatcher, Type extends ConvertDel<KeysEvents<This>>>(this: This, type: Type) {
+		//@ts-ignore
+		this[`@${type}`].clear();
 	}
 }
 

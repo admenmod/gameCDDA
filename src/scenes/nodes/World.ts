@@ -6,6 +6,7 @@ import { Date } from '@/modules/Date';
 import type { Camera } from '@ver/Camera';
 import type { LayersList } from '@ver/CanvasLayer';
 import { Node2D } from '@/scenes/nodes/Node2D';
+import type { getInstanceOf } from '@ver/types';
 
 
 export class World extends Node2D {
@@ -13,6 +14,7 @@ export class World extends Node2D {
 	public cellsize = new Vector2(1, 1);
 
 	public all_nodes: NodeCell[] = [];
+	public active_nodes: NodeCell[] = [];
 
 
 	public enter_date: Date = new Date();
@@ -24,7 +26,6 @@ export class World extends Node2D {
 	}): Promise<void> {
 		this.size.set(p.size);
 	}
-
 
 	public getObjectCellUp(target: Vector2): NodeCell | null{
 		return this.all_nodes.find(i => i.cellpos.isSame(target)) || null;

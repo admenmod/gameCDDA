@@ -9,12 +9,12 @@ import { KeymapperOfActions, MappingsMode } from '@ver/KeymapperOfActions';
 import { Node2D } from '@/scenes/nodes/Node2D';
 import { TileMap } from '@/scenes/nodes/TileMap';
 import { Popup } from '@/scenes/nodes/Popup';
+import { World } from '@/scenes/nodes/World';
 import { NodeCell } from '@/scenes/nodes/NodeCell';
 import { Player } from '@/scenes/nodes/Player';
 import { Apple } from '@/scenes/nodes/Apple';
 
 import { GridMap } from '@/modules/GridMap';
-import { World } from '@/modules/World';
 import { touches, canvas, layers, gm, keyboardInputInterceptor } from '@/global';
 
 
@@ -87,7 +87,11 @@ export class MainScene extends Node2D {
 	public static map: MapParser.Map;
 
 	public static async _load(): Promise<void> {
-		await NodeCell.load();
+		await Promise.all([
+			NodeCell.load(),
+			Popup.load()
+		]);
+
 		this.map = await MapParser.instance().loadMap('maps/test-map.json');
 	}
 
@@ -118,20 +122,22 @@ export class MainScene extends Node2D {
 
 		const layer = tilemap.layers[0];
 		const oInits = [];
-		for(let i = 0; i < layer.data.length; i++) {
-			if(layer.data[i] === 0) continue;
+		if(layer.type === 'tilelayer') {
+			for(let i = 0; i < layer.data.length; i++) {
+				if(layer.data[i] === 0) continue;
 
-			const x = i % layer.width;
-			const y = Math.floor(i / layer.width);
+				const x = i % layer.width;
+				const y = Math.floor(i / layer.width);
 
-			const o = new NodeCell();
+				const o = new NodeCell();
 
-			oInits.push(o.init({
-				isPickupable: false
-			}).then(() => {
-				o.cellpos.set(x, y);
-				this.world.addObject(o);
-			}));
+				oInits.push(o.init({
+					isPickupable: false
+				}).then(() => {
+					o.cellpos.set(x, y);
+					this.world.addObject(o);
+				}));
+			}
 		}
 
 		await Promise.all([oInits]);
@@ -173,7 +179,7 @@ export class MainScene extends Node2D {
 					break;
 				case 'Ctrl- ': text = 'list space';
 					break;
-				case 'a|a': text = 'defult action';
+				case 'a|a': text = 'default action';
 					break;
 				case 'a|s': text = 'save action';
 					break;
@@ -186,12 +192,12 @@ export class MainScene extends Node2D {
 			}
 
 
-			const popup = new Popup({
+			const popup = new Popup();
+			popup.init({
 				pos: this.player.position.buf().add(0, -1.5),
 				text: text
 			});
 
-			// popup.init();
 			this.popups.push(popup);
 		};
 

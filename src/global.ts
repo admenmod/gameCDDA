@@ -24,6 +24,8 @@ helpPopup.classList.add('help-popup');
 helpPopup.innerHTML += `<span>
 w + Arrow - взять в руки <br>
 d + Arrow - выбросить предмет в руках <br>
+i + i - open inventory <br>
+a + a - default action <br>
 <br>
 dblclick - полноэкранный режим
 </span>`;
