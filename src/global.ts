@@ -29,7 +29,7 @@ a + a - default action <br>
 <br>
 dblclick - полноэкранный режим
 </span>`;
-canvas.append(helpPopup);
+// canvas.append(helpPopup);
 helpPopup.ondblclick = () => helpPopup.remove();
 
 //@ts-ignore
@@ -83,9 +83,17 @@ export const gm = new class GameManager extends EventDispatcher {
 
 const mainLoop = new MainLoop();
 
+layers.main.canvas.hidden = true;
+
 mainLoop.on('update', dt => {
 	main_scene.process(dt);
 	main_scene.render(layers, gm.camera);
+
+	layers.back.clearRect(0, 0, canvas.width, canvas.height);
+	// layers.back.globalAlpha = 0.7;
+	if(canvas.layers.webgl) layers.back.drawImage(canvas.layers.webgl, 0, 0);
+	// layers.back.globalAlpha = 0.7;
+	// layers.back.drawImage(canvas.layers.main, 0, 0);
 
 	touches.nullify();
 });
@@ -94,6 +102,9 @@ mainLoop.on('update', dt => {
 export let main_scene: MainScene;
 
 MainScene.load().then(() => {
+	import('@/webgl/main');
+
+
 	main_scene = new MainScene();
 	main_scene.init();
 

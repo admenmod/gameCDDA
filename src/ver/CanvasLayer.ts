@@ -110,12 +110,15 @@ justify-self: ${this.getAttribute('justify-slot') || 'center'};
 		layer.id = id;
 		layer.style.cssText += `width:100%; height:100%; grid-area:1/1/1/1;`;
 
+		layer.width = this._width;
+		layer.height = this._height;
+
 		let idLayers: any = [...this.layersWrapper.querySelectorAll<HTMLCanvasElement>('canvas') as any].map(i => i.id);
 
 		if(pos === 'start' || pos === 'afterBegin') {
-			this.layersWrapper.insertBefore(layer, this.layers[idLayers[pos]]);
-		} else if(typeof pos === 'number' && !isNaN(pos)) {
 			this.layersWrapper.insertBefore(layer, this.layers[idLayers[0]]);
+		} else if(typeof pos === 'number' && !isNaN(pos)) {
+			this.layersWrapper.insertBefore(layer, this.layers[idLayers[pos]]);
 		} else if(pos === 'end' || pos === 'beforeEnd' || true) this.layersWrapper.append(layer);
 
 		this.layers[id] = this.layersWrapper.querySelector<HTMLCanvasElement>(`#${id}`)!;
