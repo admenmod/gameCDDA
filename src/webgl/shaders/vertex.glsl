@@ -8,4 +8,8 @@ void main() {
 	gl_Position = vec4(pos, 0.0, 1.0);
 
 	v_texcoord = a_texcoord;
+
+	v_texcoord /= 2.0;
+	v_texcoord.y = -v_texcoord.y;
+	v_texcoord += 0.5;
 }

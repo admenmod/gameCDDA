@@ -128,10 +128,6 @@ float circ(vec2 p) {
 void main() {
 	vec2 pos = v_texcoord;
 
-	pos /= 2.0;
-	pos.y = -pos.y;
-	pos += 0.5;
-
 
 	pos /= exp(mod(u_time * 0.25, PI) * smoothNoise(pos / sin(u_time)) / 50.0);
 

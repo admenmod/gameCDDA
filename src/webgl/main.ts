@@ -2,7 +2,7 @@ import { canvas } from '@/global';
 
 
 const cvs = canvas.createLayer('webgl', 'afterBegin');
-const gl = cvs.getContext('webgl')! as WebGL2RenderingContext;
+const gl = cvs.getContext('webgl', { premultipliedAlpha: false })! as WebGL2RenderingContext;
 cvs.hidden = true;
 
 canvas['@resize'].on(size => gl.viewport(0, 0, size.x, size.y));
@@ -65,8 +65,6 @@ const createTexture = () => {
 
 	return data;
 };
-
-
 
 
 //==================== DATA_PREPARA ====================//
@@ -171,6 +169,4 @@ const gl_locations: {
 		requestAnimationFrame(_updata);
 	};
 	_updata();
-
-	// globalThis.UUU = _updata;
 })();
