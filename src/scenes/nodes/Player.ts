@@ -1,14 +1,23 @@
 import { Vector2 } from '@ver/Vector2';
 import { NodeCell } from '@/scenes/nodes/NodeCell';
 
+import { Sprite } from '@/scenes/nodes/Sprite';
+
 
 export class Player extends NodeCell {
 	public size = new Vector2(1, 1);
 
+	public TREE() { return {
+		// Sprite
+	}}
 
-	//@ts-ignore
 	protected async _init(): Promise<void> {
-		await super._init({ isPickupable: true });
+		// const sprite = this.getChild('Sprite')!;
+		//
+		// sprite.load('assets/img/player.png');
+		// sprite.scale.set(5);
+
+		await super._init();
 	}
 
 
@@ -17,9 +26,12 @@ export class Player extends NodeCell {
 	}
 
 
-	protected _process(dt: number): void {
+	protected _process(this: Player, dt: number): void {
 		// this.position.moveTo(this.target, this.speed * dt, true);
+
+		// this.get().Mesh.render(0 as any as CanvasRenderingContext2D);
 	}
+
 
 	protected _draw(
 		ctx: CanvasRenderingContext2D,
@@ -37,12 +49,8 @@ export class Player extends NodeCell {
 		ctx.translate(pos.x + size.x/2, pos.y + size.y/2);
 		ctx.rotate(rot);
 		ctx.translate(-(pos.x + size.x/2), -(pos.y + size.y/2));
-		ctx.fillStyle = '#ff1111';
+		ctx.fillStyle = '#ee1111';
 		ctx.fillRect(pos.x, pos.y, size.x, size.y);
 		ctx.restore();
-	}
-
-	public sey(msg: string) {
-		;
 	}
 }

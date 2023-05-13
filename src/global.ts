@@ -1,16 +1,17 @@
 import { Vector2 } from '@ver/Vector2';
 import { EventDispatcher, Event } from '@ver/events';
-import { Scene } from '@ver/Scene';
 import { TouchesController } from '@ver/TouchesController';
-import { MainLoop } from '@ver/MainLoop';
 import { CanvasLayer } from '@ver/CanvasLayer';
+import { MainLoop } from '@ver/MainLoop';
 import { Camera } from '@ver/Camera';
-import { MapParser } from '@ver/MapParser';
 import { KeyboardInputInterceptor } from '@ver/KeyboardInputInterceptor';
 import type { LayersList } from '@ver/CanvasLayer';
 
 import { MainScene } from '@/scenes/MainScene';
 import { SensorCamera } from '@/modules/SensorCamera';
+
+import { RenderSystem } from '@/scenes/CanvasItem';
+import { ProcessSystem } from '@/scenes/Node';
 
 
 export const appElement = document.querySelector<HTMLDivElement>('#app');
@@ -57,8 +58,8 @@ canvas.addEventListener('click', () => keyboardInputInterceptor.focus());
 
 
 export const gm = new class GameManager extends EventDispatcher {
-	public '@resize' = new Event<this, [Vector2]>(this);
-	public '@camera.scale' = new Event<this, [Vector2]>(this);
+	public '@resize' = new Event<GameManager, [Vector2]>(this);
+	public '@camera.scale' = new Event<GameManager, [Vector2]>(this);
 
 
 	public screen = new Vector2(canvas.size);
@@ -81,32 +82,38 @@ export const gm = new class GameManager extends EventDispatcher {
 }
 
 
-const mainLoop = new MainLoop();
+export const mainLoop = new MainLoop();
+
 
 layers.main.canvas.hidden = true;
 
+
+export const processSystem = new ProcessSystem();
+export const renderSystem = new RenderSystem();
+
+mainLoop.on('update', dt => processSystem.update(dt), 25);
+mainLoop.on('update', dt => renderSystem.update(layers, gm.camera), 50);
+mainLoop.on('update', dt => touches.nullify(dt), 10000);
+
 mainLoop.on('update', dt => {
-	main_scene.process(dt);
-	main_scene.render(layers, gm.camera);
-
 	layers.back.clearRect(0, 0, canvas.width, canvas.height);
-	// layers.back.globalAlpha = 0.7;
-	if(canvas.layers.webgl) layers.back.drawImage(canvas.layers.webgl, 0, 0);
-	// layers.back.globalAlpha = 0.7;
-	// layers.back.drawImage(canvas.layers.main, 0, 0);
 
-	touches.nullify();
+	if(canvas.layers.webgl) layers.back.drawImage(canvas.layers.webgl, 0, 0);
+
+	layers.back.drawImage(canvas.layers.main, 0, 0);
 });
 
 
-export let main_scene: MainScene;
+(async () => {
+	await MainScene.load();
 
-MainScene.load().then(() => {
-	import('@/webgl/main');
+	// await import('@/webgl/main');
 
+	const main_scene = new MainScene();
+	await main_scene.init();
 
-	main_scene = new MainScene();
-	main_scene.init();
+	processSystem.addRoot(main_scene);
+	renderSystem.addRoot(main_scene);
 
 	mainLoop.start();
-});
+})();

@@ -1,5 +1,7 @@
 import { Vector2 } from '@ver/Vector2';
 import { Node2D } from '@/scenes/nodes/Node2D';
+import type { LayersList } from '@ver/CanvasLayer';
+import type { Camera } from '@ver/Camera';
 
 
 export class Popup extends Node2D {
@@ -15,13 +17,6 @@ export class Popup extends Node2D {
 
 	private _catchTextMetrics: TextMetrics | null = null;
 
-	protected async _init(p: {
-		text: string,
-		pos?: Vector2
-	}): Promise<void> {
-		this.text = p.text;
-		this.position.set(p.pos || new Vector2());
-	}
 
 	protected _process(dt: number): void {
 		if(this.timeout < 0) this.alpha -= 0.02;
@@ -29,8 +24,6 @@ export class Popup extends Node2D {
 	}
 
 	protected _draw(ctx: CanvasRenderingContext2D, pos: Vector2, scale: Vector2, rot: number, pixelDensity: number) {
-		super._draw(ctx, pos, scale, rot, pixelDensity);
-
 		const size = this.size.buf();
 		const dpos = pos.buf().sub(size.buf().div(2));
 
@@ -61,5 +54,43 @@ export class Popup extends Node2D {
 		ctx.fillText(this.text, pos.x, pos.y);
 
 		ctx.restore();
+	}
+}
+
+
+export class PopupContainer extends Node2D {
+	public popups: Popup[] = [];
+
+
+	public addPopap(popup: Popup): void {
+		this.popups.push(popup);
+	}
+
+	public createPopap(text: string, pos: Vector2) {
+		const popup = new Popup();
+		popup.text = text;
+		popup.position.set(pos);
+
+		popup.init();
+
+		this.addPopap(popup);
+	}
+
+
+	protected _process(dt: number): void {
+		for(let i = 0, len = this.popups.length; i < len; i++) {
+			this.popups[i].process(dt);
+			const l = this.popups.findIndex(i => i.alpha <= 0);
+
+			if(~l) {
+				this.popups.splice(l, 1);
+				i--;
+				len--;
+			}
+		}
+	}
+
+	protected _render(layers: LayersList, camera: Camera): void {
+		for(let i = 0; i < this.popups.length; i++) this.popups[i].render(layers, camera);
 	}
 }

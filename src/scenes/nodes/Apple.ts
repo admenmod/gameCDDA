@@ -5,12 +5,11 @@ import { NodeCell } from '@/scenes/nodes/NodeCell';
 export class Apple extends NodeCell {
 	public size = new Vector2(1, 1);
 
+	constructor() {
+		super();
 
-	//@ts-ignore
-	protected async _init(): Promise<void> {
-		await super._init({ isPickupable: true });
+		this.isPickupable = true;
 	}
-
 
 	protected _draw(
 		ctx: CanvasRenderingContext2D,

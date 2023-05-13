@@ -1,14 +1,16 @@
-import type { LayersList } from '@ver/CanvasLayer';
-import type { Camera } from '@ver/Camera';
 import { Vector2 } from '@ver/Vector2';
+import { Event } from '@ver/events';
 import { Scene } from '@ver/Scene';
 import { MapParser } from '@ver/MapParser';
+import type { LayersList } from '@ver/CanvasLayer';
+import type { Camera } from '@ver/Camera';
 import { KeyboardInputInterceptor } from '@ver/KeyboardInputInterceptor';
 import { KeymapperOfActions, MappingsMode } from '@ver/KeymapperOfActions';
 
+import { Node } from '@/scenes/Node';
 import { Node2D } from '@/scenes/nodes/Node2D';
 import { TileMap } from '@/scenes/nodes/TileMap';
-import { Popup } from '@/scenes/nodes/Popup';
+import { Popup, PopupContainer } from '@/scenes/nodes/Popup';
 import { World } from '@/scenes/nodes/World';
 import { NodeCell } from '@/scenes/nodes/NodeCell';
 import { Player } from '@/scenes/nodes/Player';
@@ -24,8 +26,6 @@ export class MainScene extends Node2D {
 		size: gm.screen,
 		coordinates: true
 	});
-
-	private popups: Popup[] = [];
 
 
 	private systemInfoDrawObject = {
@@ -77,21 +77,21 @@ export class MainScene extends Node2D {
 
 
 	public TREE() { return {
-		World: World,
-		TileMap: TileMap,
-		Player: Player,
+		World, TileMap, Player, PopupContainer,
+
 		Apple1: Apple,
 		Apple2: Apple,
 		Apple3: Apple,
 		Apple4: Apple,
 		Apple5: Apple
-	} as const; };
-
+	}}
 
 	public static map: MapParser.Map;
 
-	public static async _load(): Promise<void> {
+	protected static async _load(scene: typeof this): Promise<void> {
 		await Promise.all([
+			super._load(scene),
+
 			NodeCell.load(),
 			Popup.load()
 		]);
@@ -99,31 +99,23 @@ export class MainScene extends Node2D {
 		this.map = await MapParser.instance().loadMap('maps/test-map.json');
 	}
 
-	private get world() { return this.get('World'); }
-	private get tilemap() { return this.get('TileMap'); }
-	private get player() { return this.get('Player'); }
 
-	private get apple1() { return this.get('Apple1'); }
-	private get apple2() { return this.get('Apple2'); }
-	private get apple3() { return this.get('Apple3'); }
-	private get apple4() { return this.get('Apple4'); }
-	private get apple5() { return this.get('Apple5'); }
+	private get world() { return this.getChild('World')!; }
+	private get tilemap() { return this.getChild('TileMap')!; }
+	private get player() { return this.getChild('Player')!; }
+	private get popups() { return this.getChild('PopupContainer')!; }
 
-	//@ts-ignore
+	private get apple1() { return this.getChild('Apple1')!; }
+	private get apple2() { return this.getChild('Apple2')!; }
+	private get apple3() { return this.getChild('Apple3')!; }
+	private get apple4() { return this.getChild('Apple4')!; }
+	private get apple5() { return this.getChild('Apple5')!; }
+
+
 	public async _init(this: MainScene): Promise<void> {
-		await Promise.all([
-			this.get('World').init({ size: new Vector2(20, 20) }),
-			this.get('TileMap').init(MainScene.map),
-			this.get('Player').init(),
+		this.getChild('TileMap')!.map = MainScene.map;
 
-			this.get('Apple1').init(),
-			this.get('Apple2').init(),
-			this.get('Apple3').init(),
-			this.get('Apple4').init(),
-			this.get('Apple5').init()
-		]);
-
-
+		this.world.size.set(20, 20);
 		this.world.date.setHours(6);
 
 		this.player.cellpos.set(8, 8);
@@ -135,45 +127,9 @@ export class MainScene extends Node2D {
 		this.apple5.cellpos.set(6, 5);
 
 
-		this.world.addObject(this.player);
-
-		this.world.addObject(this.apple1);
-		this.world.addObject(this.apple2);
-		this.world.addObject(this.apple3);
-		this.world.addObject(this.apple4);
-		this.world.addObject(this.apple5);
-
-
-
-		const tilemap = this.tilemap.map;
-		console.log(tilemap);
-
-
-		const layer = tilemap.layers[0];
-		const oInits = [];
-		if(layer.type === 'tilelayer') {
-			for(let i = 0; i < layer.data.length; i++) {
-				if(layer.data[i] === 0) continue;
-
-				const x = i % layer.width;
-				const y = Math.floor(i / layer.width);
-
-				const o = new NodeCell();
-
-				oInits.push(o.init({
-					isPickupable: false
-				}).then(() => {
-					o.cellpos.set(x, y);
-					this.world.addObject(o);
-				}));
-			}
-		}
-
-		await Promise.all([oInits]);
-
-
 		this.keymapperOfActions = new KeymapperOfActions(this.normal_mode);
 		this.keymapperOfActions.init(keyboardInputInterceptor);
+		this.keymapperOfActions.enable();
 
 
 		const updateOnResize = (size: Vector2) => {
@@ -188,9 +144,50 @@ export class MainScene extends Node2D {
 
 		gm.on('resize', updateOnResize);
 		gm.on('camera.scale', scale => this.gridMap.scale.set(scale));
+
+
+		await super._init();
+
+
+		this.world.addObject(this.player);
+
+		this.world.addObject(this.apple1);
+		this.world.addObject(this.apple2);
+		this.world.addObject(this.apple3);
+		this.world.addObject(this.apple4);
+		this.world.addObject(this.apple5);
+
+
+		const tilemap = this.tilemap.map!;
+		console.log(tilemap);
+
+
+		const layer = tilemap.layers[0];
+		const oInits: Promise<any>[] = [];
+		if(layer.type === 'tilelayer') {
+			for(let i = 0; i < layer.data.length; i++) {
+				if(layer.data[i] === 0) continue;
+
+				const x = i % layer.width;
+				const y = Math.floor(i / layer.width);
+
+				const o = new NodeCell();
+				o.isPickupable = false;
+
+				oInits.push(o.init().then(() => {
+					o.cellpos.set(x, y);
+					this.world.addObject(o);
+				}));
+			}
+		}
+
+		await Promise.all([oInits]);
 	}
 
-	protected _ready(): void {
+	protected _ready(this: MainScene): void {
+		this.popups.zIndex += 100;
+
+
 		const onmappings: KeymapperOfActions.Action = ({ mapping }) => {
 			let text: string = '';
 
@@ -214,13 +211,7 @@ export class MainScene extends Node2D {
 			}
 
 
-			const popup = new Popup();
-			popup.init({
-				pos: this.player.position.buf().add(0, -1.5),
-				text: text
-			});
-
-			this.popups.push(popup);
+			this.popups.createPopap(text, this.player.globalPosition.add(0, -1.5));
 		};
 
 		this.normal_mode.register(['i', 'i'], onmappings);
@@ -237,7 +228,6 @@ export class MainScene extends Node2D {
 		this.normal_mode.register(['ArrowDown'], () => this.player.move(Vector2.DOWN));
 		this.normal_mode.register(['ArrowLeft'], () => this.player.move(Vector2.LEFT));
 		this.normal_mode.register(['ArrowRight'], () => this.player.move(Vector2.RIGHT));
-
 
 
 		const map_pikeup: KeymapperOfActions.Action = mapping => {
@@ -278,30 +268,8 @@ export class MainScene extends Node2D {
 	protected _process(this: MainScene, dt: number): void {
 		this.keymapperOfActions.update(dt);
 
-		const player = this.player;
-
-		gm.camera.position.moveTime(player.position, 10);
-		// gm.camera.position.moveTime(player.globalPosition, 10);
-		// gm.camera.position.set(player.globalPosition);
-
+		gm.camera.position.moveTime(this.player.globalPosition, 10);
 		gm.camera.process(dt, touches);
-
-
-		for(let i = 0, len = this.popups.length; i < len; i++) {
-			this.popups[i].process(dt);
-			const l = this.popups.findIndex(i => i.alpha <= 0);
-
-			if(~l) {
-				this.popups.splice(l, 1);
-				i--;
-				len--;
-			}
-		}
-
-		this.tilemap.process(dt);
-		// this.player.process(dt);
-		// this.apple.process(dt);
-		this.world.process(dt);
 
 		this.systemInfoDrawObject.update(dt);
 	}
@@ -310,11 +278,6 @@ export class MainScene extends Node2D {
 		layers.main.clearRect(0, 0, gm.screen.x, gm.screen.y);
 
 		this.gridMap.draw(layers.main, camera.getDrawPosition());
-		this.tilemap.render(layers, camera);
-		// this.player.render(layers, camera);
-		// this.apple.render(layers, camera);
-		this.world.render(layers, camera);
-
 
 		const center = this.getDrawPosition(camera);
 
@@ -342,10 +305,6 @@ export class MainScene extends Node2D {
 		layers.main.font = '15px arkhip';
 		layers.main.fillText(this.keymapperOfActions.acc.join(''), 10, gm.screen.y-10);
 		layers.main.restore();
-
-
-		for(let i = 0; i < this.popups.length; i++) this.popups[i].render(layers, camera);
-
 
 		this.systemInfoDrawObject.draw(layers.main);
 	}

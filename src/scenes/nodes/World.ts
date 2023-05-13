@@ -1,12 +1,10 @@
 import { Vector2 } from '@ver/Vector2';
 import { Event } from '@ver/events';
-import { Scene } from '@ver/Scene';
 import { NodeCell } from '@/scenes/nodes/NodeCell';
 import { Date } from '@/modules/Date';
 import type { Camera } from '@ver/Camera';
 import type { LayersList } from '@ver/CanvasLayer';
 import { Node2D } from '@/scenes/nodes/Node2D';
-import type { getInstanceOf } from '@ver/types';
 
 
 export class World extends Node2D {
@@ -19,13 +17,6 @@ export class World extends Node2D {
 
 	public enter_date: Date = new Date();
 	public date: Date = new Date();
-
-	//@ts-ignore
-	protected async _init(p: {
-		size: Vector2
-	}): Promise<void> {
-		this.size.set(p.size);
-	}
 
 	public getObjectCellUp(target: Vector2): NodeCell | null{
 		return this.all_nodes.find(i => i.cellpos.isSame(target)) || null;
@@ -46,6 +37,8 @@ export class World extends Node2D {
 		o.emit('enter_world', this);
 
 		this.all_nodes.push(o);
+
+		o.visible = true;
 	}
 
 	public delObject(o: NodeCell): void {
@@ -62,6 +55,8 @@ export class World extends Node2D {
 
 		const l = this.all_nodes.indexOf(o);
 		if(~l) this.all_nodes.splice(l, 1);
+
+		o.visible = false;
 	}
 
 	public hasNodeMovedTo(node1: NodeCell, target: Vector2): boolean {
@@ -118,7 +113,7 @@ export class World extends Node2D {
 
 	protected _render(layers: LayersList, camera: Camera): void {
 		for(let i = 0; i < this.all_nodes.length; i++) {
-			this.all_nodes[i].render(layers, camera);
+			// this.all_nodes[i].render(layers, camera);
 		}
 	}
 }

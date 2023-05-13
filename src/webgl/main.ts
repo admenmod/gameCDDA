@@ -1,7 +1,7 @@
 import { canvas } from '@/global';
 
 
-const cvs = canvas.createLayer('webgl', 'afterBegin');
+const cvs = canvas.createLayer('webgl', 'back');
 const gl = cvs.getContext('webgl', { premultipliedAlpha: false })! as WebGL2RenderingContext;
 cvs.hidden = true;
 
@@ -68,7 +68,7 @@ const createTexture = () => {
 
 
 //==================== DATA_PREPARA ====================//
-const screen = [canvas.width, canvas.height];
+const screen = new Float32Array([canvas.width, canvas.height]);
 
 const vertexArray = new Float32Array([
 	-1.0,  1.0,
@@ -153,7 +153,7 @@ const gl_locations: {
 
 	const _updata = () => {
 		gl.clearColor(0, 0, 0, 0);
-		gl.clear(gl.COLOR_BUFFER_BIT)
+		gl.clear(gl.COLOR_BUFFER_BIT);
 
 
 		gl.useProgram(program);

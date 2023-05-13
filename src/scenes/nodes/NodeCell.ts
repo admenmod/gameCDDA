@@ -17,17 +17,8 @@ export class NodeCell extends Node2D {
 	protected _isInTree: boolean = false;
 	public get isInTree(): boolean { return this._isInTree; }
 
-	public isPickupable!: boolean;
+	public isPickupable: boolean = false;
 	public inHands: NodeCell | null = null;
-
-	//@ts-ignore
-	protected async _init(p: {
-		isPickupable: boolean
-	}): Promise<void> {
-		await super._init();
-
-		this.isPickupable = p.isPickupable;
-	}
 
 
 	private _onselfpickup(picker: NodeCell) {

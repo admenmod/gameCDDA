@@ -1,10 +1,16 @@
 import { Vector2 } from '@ver/Vector2';
-import { Node } from '@/scenes/nodes/Node';
-import type { Camera } from '@ver/Camera';
-import type { LayersList } from '@ver/CanvasLayer';
+import { Node } from '@/scenes/Node';
+import { CanvasItem } from '@/scenes/CanvasItem';
+import {LayersList} from '@ver/CanvasLayer';
+import {Camera} from '@ver/Camera';
 
 
-export class Node2D extends Node {
+const PARENT_CACHE = Symbol('owners');
+
+export class Node2D extends CanvasItem {
+	protected [PARENT_CACHE]: Node2D[] = [];
+
+
 	public readonly position = new Vector2();
 	public readonly scale = new Vector2(1, 1);
 
@@ -12,21 +18,29 @@ export class Node2D extends Node {
 	public get rotation(): number { return this._rotation; }
 	public set rotation(v: number) { this._rotation = v; }
 
-	// protected _zIndex: number = 0;
-	// public get zIndex(): number { return this._zIndex; }
-	// public set zIndex(v: number) { this._zIndex = v; }
-	//
-	// public zAsRelative: boolean = true;
+
+	constructor() {
+		super();
+
+		const ontree = () => {
+			this[PARENT_CACHE].length = 0;
+			this[PARENT_CACHE].push(...this.getChainOwnersOf(Node2D));
+		};
+
+		ontree();
+
+		this['@tree_entered'].on(ontree);
+		this['@tree_exiting'].on(ontree);
+	}
 
 
-	/*
 	public get globalPosition(): Vector2 { return this.getRelativePosition(Node.MAX_NESTING); }
 	public get globalScale(): Vector2 { return this.getRelativeScale(Node.MAX_NESTING); }
 	public get globalRotation(): number { return this.getRelativeRotation(Node.MAX_NESTING); }
 	public get globalzIndex(): number { return this.getRelativezIndex(Node.MAX_NESTING); }
 
 
-	public getRelativePosition(nl: number = 0, arr: Node2D[] = this.getChainParents(Node2D)): Vector2 {
+	public getRelativePosition(nl: number = 0, arr: Node2D[] = this[PARENT_CACHE]): Vector2 {
 		const l = Math.min(nl, arr.length, Node.MAX_NESTING);
 		const acc = new Vector2();
 
@@ -43,14 +57,14 @@ export class Node2D extends Node {
 			}
 
 			prev = next;
-		};
+		}
 
 		if(arr.length) acc.add(arr[arr.length-1].position);
 
 		return acc;
 	}
 
-	public getRelativeScale(nl: number = 0, arr: Node2D[] = this.getChainParents(Node2D)): Vector2 {
+	public getRelativeScale(nl: number = 0, arr: Node2D[] = this[PARENT_CACHE]): Vector2 {
 		const l = Math.min(nl, arr.length, Node.MAX_NESTING);
 		const acc = this.scale.buf();
 
@@ -61,7 +75,7 @@ export class Node2D extends Node {
 		return acc;
 	}
 
-	public getRelativeRotation(nl: number = 0, arr: Node2D[] = this.getChainParents(Node2D)): number {
+	public getRelativeRotation(nl: number = 0, arr: Node2D[] = this[PARENT_CACHE]): number {
 		const l = Math.min(nl, arr.length, Node.MAX_NESTING);
 		let acc = this.rotation;
 
@@ -72,7 +86,7 @@ export class Node2D extends Node {
 		return acc;
 	}
 
-	public getRelativezIndex(nl: number = 0, arr: Node2D[] = this.getChainParents(Node2D)): number {
+	public getRelativezIndex(nl: number = 0, arr: Node2D[] = this[PARENT_CACHE]): number {
 		const l = Math.min(nl, arr.length, Node.MAX_NESTING);
 		let acc = this.zIndex;
 
@@ -86,17 +100,11 @@ export class Node2D extends Node {
 
 		return acc;
 	}
-	*/
 
-
-	// public getDrawPosition(camera: Camera) {
-	// 	return this.globalPosition.inc(camera.scale).inc(camera.pixelDensity).sub(camera.getDrawPosition());
-	// }
 
 	public getDrawPosition(camera: Camera) {
-		return this.position.buf().inc(camera.scale).inc(camera.pixelDensity).sub(camera.getDrawPosition());
+		return this.globalPosition.inc(camera.scale).inc(camera.pixelDensity).sub(camera.getDrawPosition());
 	}
-
 
 	protected _draw(
 		ctx: CanvasRenderingContext2D,
@@ -107,17 +115,6 @@ export class Node2D extends Node {
 	) {}
 
 
-	// public render(this: Node2D, layers: LayersList, camera: Camera): void {
-	// 	this._draw(layers.main,
-	// 		this.getDrawPosition(camera),
-	// 		this.globalScale.inc(camera.scale),
-	// 		this.globalRotation - camera.rotation,
-	// 		camera.pixelDensity
-	// 	);
-	//
-	// 	super.render(layers, camera);
-	// }
-
 	protected _render(layers: LayersList, camera: Camera): void {
 		this._draw(layers.main,
 			this.getDrawPosition(camera),
@@ -125,7 +122,5 @@ export class Node2D extends Node {
 			this.rotation - camera.rotation,
 			camera.pixelDensity
 		);
-
-		super._render(layers, camera);
 	}
 }
