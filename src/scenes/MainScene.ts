@@ -19,6 +19,8 @@ import { Apple } from '@/scenes/nodes/Apple';
 import { GridMap } from '@/modules/GridMap';
 import { touches, canvas, layers, gm, keyboardInputInterceptor } from '@/global';
 
+import { TextNode } from './nodes/gui/TextNode';
+
 
 export class MainScene extends Node2D {
 	public gridMap = new GridMap({
@@ -83,7 +85,10 @@ export class MainScene extends Node2D {
 		Apple2: Apple,
 		Apple3: Apple,
 		Apple4: Apple,
-		Apple5: Apple
+		Apple5: Apple,
+
+		textdata: TextNode,
+		texthelp: TextNode
 	}}
 
 	public static map: MapParser.Map;
@@ -110,6 +115,9 @@ export class MainScene extends Node2D {
 	private get apple3() { return this.getChild('Apple3')!; }
 	private get apple4() { return this.getChild('Apple4')!; }
 	private get apple5() { return this.getChild('Apple5')!; }
+
+	private get textdata() { return this.getChild('textdata')!; }
+	private get texthelp() { return this.getChild('texthelp')!; }
 
 
 	public async _init(this: MainScene): Promise<void> {
@@ -186,6 +194,20 @@ export class MainScene extends Node2D {
 
 	protected _ready(this: MainScene): void {
 		this.popups.zIndex += 100;
+
+		this.textdata.color = '#99ee22';
+		this.textdata.position.set(-10, 5);
+
+		this.texthelp.color = '#779933';
+		this.texthelp.position.set(20, 2);
+		this.texthelp.text =
+`w + Arrow - взять в руки
+d + Arrow - выбросить предмет в руках
+i + i - open inventory
+a + a - default action
+
+dblclick - полноэкранный режим
+`
 
 
 		const onmappings: KeymapperOfActions.Action = ({ mapping }) => {
@@ -270,6 +292,8 @@ export class MainScene extends Node2D {
 
 		gm.camera.position.moveTime(this.player.globalPosition, 10);
 		gm.camera.process(dt, touches);
+
+		this.textdata.text = 'DATE: '+this.world.date.getTimeString();
 
 		this.systemInfoDrawObject.update(dt);
 	}

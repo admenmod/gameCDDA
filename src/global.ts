@@ -19,20 +19,6 @@ if(!appElement) throw new Error('app is not found');
 
 export const canvas = new CanvasLayer();
 appElement.append(canvas);
-
-const helpPopup = document.createElement('div');
-helpPopup.classList.add('help-popup');
-helpPopup.innerHTML += `<span>
-w + Arrow - взять в руки <br>
-d + Arrow - выбросить предмет в руках <br>
-i + i - open inventory <br>
-a + a - default action <br>
-<br>
-dblclick - полноэкранный режим
-</span>`;
-// canvas.append(helpPopup);
-helpPopup.ondblclick = () => helpPopup.remove();
-
 //@ts-ignore
 canvas.ondblclick = () => canvas.webkitRequestFullscreen();
 
@@ -100,14 +86,14 @@ mainLoop.on('update', dt => {
 
 	if(canvas.layers.webgl) layers.back.drawImage(canvas.layers.webgl, 0, 0);
 
-	layers.back.drawImage(canvas.layers.main, 0, 0);
+	// layers.back.drawImage(canvas.layers.main, 0, 0);
 });
 
 
 (async () => {
 	await MainScene.load();
 
-	// await import('@/webgl/main');
+	await import('@/webgl/main');
 
 	const main_scene = new MainScene();
 	await main_scene.init();
