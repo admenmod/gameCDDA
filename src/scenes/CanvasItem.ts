@@ -29,9 +29,19 @@ export class RenderSystem extends System<typeof CanvasItem> {
 }
 
 
-const PARENT_CACHE = Symbol('parent_cache');
+const PARENT_CACHE = Symbol('PARENT_CACHE');
 
 export class CanvasItem extends Node {
+	public set '%visible'(v: boolean) { this.visible = v; }
+	public get '%visible'(): boolean { return this.visible; }
+
+	public set '%zAsRelative'(v: boolean) { this.zAsRelative = v; }
+	public get '%zAsRelative'(): boolean { return this.zAsRelative; }
+
+	public set '%zIndex'(v: number) { this.zIndex = v; }
+	public get '%zIndex'(): number { return this.zIndex; }
+
+
 	protected [PARENT_CACHE]: CanvasItem[] = [];
 
 	public '@change%zIndex' = new Event<CanvasItem, [CanvasItem]>(this);

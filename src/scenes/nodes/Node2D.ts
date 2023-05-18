@@ -5,9 +5,19 @@ import {LayersList} from '@ver/CanvasLayer';
 import {Camera} from '@ver/Camera';
 
 
-const PARENT_CACHE = Symbol('owners');
+const PARENT_CACHE = Symbol('PARENT_CACHE');
 
 export class Node2D extends CanvasItem {
+	public set '%position'(v: Vector2) { this.position.set(v); }
+	public get '%position'(): Vector2 { return this.position.buf(); }
+
+	public set '%rotation'(v: number) { this.rotation = v; }
+	public get '%rotation'(): number { return this.rotation; }
+
+	public set '%scale'(v: Vector2) { this.scale.set(v); }
+	public get '%scale'(): Vector2 { return this.scale.buf(); }
+
+
 	protected [PARENT_CACHE]: Node2D[] = [];
 
 

@@ -7,11 +7,12 @@ import { Camera } from '@ver/Camera';
 import { KeyboardInputInterceptor } from '@ver/KeyboardInputInterceptor';
 import type { LayersList } from '@ver/CanvasLayer';
 
-import { MainScene } from '@/scenes/MainScene';
+import { MainScene } from '@/scenes/DATA_WING/MainScene';
 import { SensorCamera } from '@/modules/SensorCamera';
 
-import { RenderSystem } from '@/scenes/CanvasItem';
 import { ProcessSystem } from '@/scenes/Node';
+import { RenderSystem } from '@/scenes/CanvasItem';
+import { PhysicsBox2DSystem } from '@/scenes/PhysicsBox2DItem';
 
 
 export const appElement = document.querySelector<HTMLDivElement>('#app');
@@ -33,14 +34,14 @@ for(let id in canvas.layers) {
 export const touches = new TouchesController(canvas);
 
 
-export const hiddenInput = document.createElement('input');
-hiddenInput.style.position = 'fixed';
-hiddenInput.style.top = '-1000px';
-canvas.append(hiddenInput);
+// export const hiddenInput = document.createElement('input');
+// hiddenInput.style.position = 'fixed';
+// hiddenInput.style.top = '-1000px';
+// canvas.append(hiddenInput);
 
-export const keyboardInputInterceptor = new KeyboardInputInterceptor(hiddenInput);
-keyboardInputInterceptor.init();
-canvas.addEventListener('click', () => keyboardInputInterceptor.focus());
+// export const keyboardInputInterceptor = new KeyboardInputInterceptor(hiddenInput);
+// keyboardInputInterceptor.init();
+// canvas.addEventListener('click', () => keyboardInputInterceptor.focus());
 
 
 export const gm = new class GameManager extends EventDispatcher {
@@ -76,24 +77,26 @@ layers.main.canvas.hidden = true;
 
 export const processSystem = new ProcessSystem();
 export const renderSystem = new RenderSystem();
+export const physicsBox2DSystem = new PhysicsBox2DSystem();
 
 mainLoop.on('update', dt => processSystem.update(dt), 25);
 mainLoop.on('update', dt => renderSystem.update(layers, gm.camera), 50);
 mainLoop.on('update', dt => touches.nullify(dt), 10000);
 
+mainLoop.on('update', dt => physicsBox2DSystem.update(16), 20);
+
 mainLoop.on('update', dt => {
 	layers.back.clearRect(0, 0, canvas.width, canvas.height);
 
 	if(canvas.layers.webgl) layers.back.drawImage(canvas.layers.webgl, 0, 0);
-
-	// layers.back.drawImage(canvas.layers.main, 0, 0);
+	else layers.back.drawImage(canvas.layers.main, 0, 0);
 });
 
 
 (async () => {
 	await MainScene.load();
 
-	await import('@/webgl/main');
+	// await import('@/webgl/main');
 
 	const main_scene = new MainScene();
 	await main_scene.init();
@@ -101,5 +104,10 @@ mainLoop.on('update', dt => {
 	processSystem.addRoot(main_scene);
 	renderSystem.addRoot(main_scene);
 
+	physicsBox2DSystem.addRoot(main_scene);
+
 	mainLoop.start();
+
+
+	// await import('@/inspector/index');
 })();

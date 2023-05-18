@@ -27,9 +27,13 @@ export class ProcessSystem extends System<typeof Node> {
 }
 
 
-const PARENT_CACHE = Symbol('parent_cache');
+const PARENT_CACHE = Symbol('PARENT_CACHE');
 
 export class Node extends Scene {
+	public set '%name'(v: string) { this.name = v; }
+	public get '%name'(): string { return this.name; }
+
+
 	protected [PARENT_CACHE]: Node[] = [];
 
 	public '@change%processPriority' = new Event<Node, [Node]>(this);
@@ -62,9 +66,6 @@ export class Node extends Scene {
 	public process(dt: number): void {
 		this._process(dt);
 	}
-
-
-	public get NODE_TYPE(): string { return this.constructor.name; }
 
 	public static readonly MAX_NESTING = 10000;
 }
