@@ -23,21 +23,13 @@ export class Popup extends Node2D {
 		else this.timeout -= dt;
 	}
 
-	protected _draw(ctx: CanvasRenderingContext2D, pos: Vector2, scale: Vector2, rot: number, pixelDensity: number) {
-		const size = this.size.buf();
-		const dpos = pos.buf().sub(size.buf().div(2));
-
-		ctx.save();
-		ctx.translate(dpos.x + size.x/2, dpos.y + size.y/2);
-		ctx.rotate(rot);
-		ctx.translate(-(dpos.x + size.x/2), -(dpos.y + size.y/2));
-
+	protected _draw(ctx: CanvasRenderingContext2D): void {
 		ctx.globalAlpha = this.alpha;
 
 		ctx.fillStyle = '#222222';
-		ctx.fillRect(dpos.x, dpos.y, size.x, size.y);
+		ctx.fillRect(-this.size.x/2, -this.size.y/2, this.size.x, this.size.y);
 		ctx.strokeStyle = '#995577';
-		ctx.strokeRect(dpos.x, dpos.y, size.x, size.y);
+		ctx.strokeRect(-this.size.x/2, -this.size.y/2, this.size.x, this.size.y);
 
 		ctx.fillStyle = '#eeeeee';
 		ctx.textAlign = 'center';
@@ -51,9 +43,7 @@ export class Popup extends Node2D {
 			this.size.set(m.width+40, 30);
 		}
 
-		ctx.fillText(this.text, pos.x, pos.y);
-
-		ctx.restore();
+		ctx.fillText(this.text, 0, 0);
 	}
 }
 

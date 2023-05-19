@@ -11,7 +11,7 @@ export class TileMap extends Node2D {
 	public map: MapParser.Map | null = null;
 
 
-	protected _draw(ctx: CanvasRenderingContext2D, pos: Vector2, scale: Vector2, rot: number, pixelDensity: number): void {
+	protected _draw(ctx: CanvasRenderingContext2D): void {
 		if(!this.map) return;
 
 		const map = this.map;
@@ -52,12 +52,12 @@ export class TileMap extends Node2D {
 				const tid = id - tileset.firstgid;
 				const tc = new Vector2(tid % tileset.columns, Math.floor(tid / tileset.columns));
 
-				const size = new Vector2(this.size).inc(scale).inc(pixelDensity);
+				const size = this.size.buf();
 
 				const tileoffset = new Vector2(tc).inc(tileset.tile_size);
 				const tilesize = new Vector2(tileset.tile_size);
 				const drawsize = new Vector2(size);
-				const drawpos = new Vector2(l).inc(size).add(pos).sub(drawsize.buf().div(2));
+				const drawpos = new Vector2(l).inc(size).sub(drawsize.buf().div(2));
 
 				ctx.drawImage(
 					tileset.imagedata,

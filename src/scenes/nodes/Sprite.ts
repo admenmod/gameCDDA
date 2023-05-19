@@ -20,12 +20,9 @@ export class Sprite extends Node2D {
 		this.image = await loadImage(...args);
 	}
 
-	protected _render(layers: LayersList, camera: Camera): void {
+	protected _draw(ctx: CanvasRenderingContext2D): void {
 		if(!this.image) return;
 
-		const pos = this.globalPosition.sub(camera.getDrawPosition());
-		const size = this.globalScale.inc(this.width, this.height).inc(camera.scale);
-
-		layers.main.drawImage(this.image, pos.x, pos.y, size.x, size.y);
+		ctx.drawImage(this.image, -this.width/2, -this.height/2, this.width, this.height);
 	}
 }

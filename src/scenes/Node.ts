@@ -1,6 +1,7 @@
 import { Event } from '@ver/events';
 import { Scene } from '@ver/Scene';
 import { System } from '@ver/System';
+import { TouchesController } from '@ver/TouchesController';
 
 
 export class ProcessSystem extends System<typeof Node> {

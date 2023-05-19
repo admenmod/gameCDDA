@@ -1,8 +1,8 @@
 import { Vector2 } from '@ver/Vector2';
 import { Node } from '@/scenes/Node';
 import { CanvasItem } from '@/scenes/CanvasItem';
-import {LayersList} from '@ver/CanvasLayer';
-import {Camera} from '@ver/Camera';
+import { LayersList } from '@ver/CanvasLayer';
+import { Camera } from '@ver/Camera';
 
 
 const PARENT_CACHE = Symbol('PARENT_CACHE');
@@ -22,6 +22,7 @@ export class Node2D extends CanvasItem {
 
 
 	public readonly position = new Vector2();
+	public readonly axis_offset = new Vector2();
 	public readonly scale = new Vector2(1, 1);
 
 	protected _rotation: number = 0;
@@ -112,25 +113,29 @@ export class Node2D extends CanvasItem {
 	}
 
 
-	public getDrawPosition(camera: Camera) {
-		return this.globalPosition.inc(camera.scale).inc(camera.pixelDensity).sub(camera.getDrawPosition());
-	}
-
-	protected _draw(
-		ctx: CanvasRenderingContext2D,
-		pos: Vector2,
-		scale: Vector2,
-		rot: number,
-		pixelDensity: number
-	) {}
-
+	protected _draw(ctx: CanvasRenderingContext2D) {}
 
 	protected _render(layers: LayersList, camera: Camera): void {
-		this._draw(layers.main,
-			this.getDrawPosition(camera),
-			this.scale.buf().inc(camera.scale),
-			this.rotation - camera.rotation,
-			camera.pixelDensity
-		);
+		const ctx = layers.main;
+
+		ctx.save();
+		camera.use(ctx);
+
+		const scale = this.globalScale;
+		const pos = this.globalPosition;
+		const rot = this.globalRotation;
+
+		ctx.scale(scale.x, scale.y);
+		ctx.translate(pos.x, pos.y);
+
+		if(this.axis_offset.x !== 0 || this.axis_offset.y !== 0) {
+			ctx.translate(pos.x + this.axis_offset.x, pos.y + this.axis_offset.y);
+			ctx.rotate(rot);
+			ctx.translate(-(pos.x + this.axis_offset.x), -(pos.y + this.axis_offset.y));
+		} else ctx.rotate(rot);
+
+		this._draw(ctx);
+
+		ctx.restore();
 	}
 }

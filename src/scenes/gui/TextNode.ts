@@ -21,21 +21,15 @@ export class TextNode extends Node2D {
 	protected linespace: number = 1;
 
 
-	protected _draw(
-		ctx: CanvasRenderingContext2D,
-		pos: Vector2,
-		scale: Vector2,
-		rot: number,
-		pixelDensity: number
-	): void {
-		ctx.save();
+	protected _draw(ctx: CanvasRenderingContext2D): void {
+		ctx.beginPath();
 		ctx.fillStyle = this.color;
 		ctx.font = '15px arkhip';
 
-		const linespace = this.linespace * pixelDensity;
+		const linespace = this.linespace;
 
 		for(let i = 0; i < this._lines.length; i++) {
-			ctx.fillText(this._lines[i], pos.x, pos.y + linespace * i);
+			ctx.fillText(this._lines[i], 0, linespace * i);
 		}
 
 		ctx.restore();

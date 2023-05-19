@@ -50,7 +50,7 @@ export const gm = new class GameManager extends EventDispatcher {
 
 
 	public screen = new Vector2(canvas.size);
-	public camera = new SensorCamera(new Camera(this.screen, 30));
+	public camera = new SensorCamera(new Camera(this.screen));
 
 
 	constructor() {

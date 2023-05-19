@@ -3,13 +3,12 @@ import { Vector2 } from '@ver/Vector2';
 import { PhysicsBox2DItem } from '@/scenes/PhysicsBox2DItem';
 import { Sprite } from '@/scenes/nodes/Sprite';
 
-import type { Touch } from '@ver/TouchesController';
 import { gm, touches } from '@/global';
 import { b2Shapes, b2Vec2 } from '@/modules/Box2DWrapper';
 
 
 export class Player extends PhysicsBox2DItem {
-	public size = new Vector2(1, 1);
+	public size = new Vector2(20, 20);
 
 	private speed: number = 0.00002;
 	private l_input: boolean = false;
@@ -26,8 +25,11 @@ export class Player extends PhysicsBox2DItem {
 		// sprite.load('assets/img/player.png');
 		// sprite.scale.set(5);
 
-		this.b2fixtureDef.shape = new b2Shapes.b2CircleShape();
-		(this.b2fixtureDef.shape as b2Shapes.b2CircleShape).SetRadius(0.5);
+		const shape = new b2Shapes.b2CircleShape();
+		shape.SetRadius(this.size.y/this.pixelDensity/2);
+
+		this.b2fixtureDef.shape = shape;
+
 
 		await super._init();
 	}
@@ -59,31 +61,16 @@ export class Player extends PhysicsBox2DItem {
 		this.b2_velosity.Multiply(0.99);
 	}
 
-	protected _draw(
-		ctx: CanvasRenderingContext2D,
-		pos: Vector2,
-		scale: Vector2,
-		rot: number,
-		pixelDensity: number
-	) {
-		super._draw(ctx, pos, scale, rot, pixelDensity);
+	protected _draw(ctx: CanvasRenderingContext2D) {
+		const c = this.size.x;
 
-		const size = this.size.buf().inc(scale).inc(pixelDensity);
-
-		ctx.save();
-		ctx.translate(pos.x, pos.y);
-		ctx.rotate(rot);
-		ctx.translate(-pos.x, -pos.y);
-
-		const c = 20;
 		ctx.fillStyle = '#ee1122';
 		ctx.beginPath();
-		ctx.moveTo(pos.x, pos.y - c/2);
-		ctx.lineTo(pos.x + c/2, pos.y + c);
-		ctx.lineTo(pos.x, pos.y + c/2);
-		ctx.lineTo(pos.x - c/2, pos.y + c);
+		ctx.moveTo(0, 0 - c/2);
+		ctx.lineTo(0 + c/2, 0 + c);
+		ctx.lineTo(0, 0 + c/2);
+		ctx.lineTo(0 - c/2, 0 + c);
 		ctx.closePath();
 		ctx.fill();
-		ctx.restore();
 	}
 }

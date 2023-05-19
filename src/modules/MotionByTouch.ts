@@ -34,8 +34,8 @@ export class MotionByTouch {
 
 			if(this.touch.isMove()) {
 				this.slidingSpeed.set(
-					Math.abs(this.touch.sx) <= this.maxspeed ? this.touch.sx :Math.sign(this.touch.sx)*this.maxspeed,
-					Math.abs(this.touch.sy) <= this.maxspeed ? this.touch.sy :Math.sign(this.touch.sy)*this.maxspeed
+					Math.abs(this.touch.s.x) <= this.maxspeed ? this.touch.s.x :Math.sign(this.touch.s.x)*this.maxspeed,
+					Math.abs(this.touch.s.y) <= this.maxspeed ? this.touch.s.y :Math.sign(this.touch.s.y)*this.maxspeed
 				);
 			};
 

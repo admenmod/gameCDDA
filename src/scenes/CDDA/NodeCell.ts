@@ -1,7 +1,7 @@
 import { Vector2 } from '@ver/Vector2';
 import { Event } from '@ver/events';
 import { Node2D } from '@/scenes/nodes/Node2D';
-import type { World } from '@/scenes/nodes/World';
+import type { World } from './World';
 
 
 export class NodeCell extends Node2D {

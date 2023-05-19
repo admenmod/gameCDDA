@@ -1,50 +1,29 @@
+import { Node2D } from '@/scenes/nodes/Node2D';
 import { Vector2 } from '@ver/Vector2';
 
+import { gm } from '@/global';
 
-export class GridMap {
-	public offset: Vector2;
-	public tile: Vector2;
-	public size: Vector2;
-	public scale: Vector2;
 
-	public lineWidth: number;
-	public lineColor: string;
+export class GridMap extends Node2D {
+	public offset = new Vector2();
+	public tile = new Vector2(50, 50);
+	public size = new Vector2().set(gm.screen);
+	public scale = new Vector2(1, 1);
 
-	public coordinates: boolean;
+	public lineWidth: number = 0.2;
+	public lineColor: string = '#ffffff';
 
-	constructor(p: {
-		offset?: Vector2;
-		tile?: Vector2;
-		size?: Vector2;
-		scale?: Vector2;
+	public coordinates: boolean = false;
 
-		lineWidth?: number;
-		lineColor?: string;
 
-		coordinates?: boolean;
-	}) {
-		this.offset = (p.offset || new Vector2()).buf();
-		this.tile = (p.tile || new Vector2(50, 50)).buf();
-		this.size = (p.size || new Vector2()).buf();
-		this.scale = (p.scale || new Vector2(1, 1)).buf();
+	protected _draw(ctx: CanvasRenderingContext2D): void {
+		this.offset.set(gm.camera.position.buf().sub(this.size.buf().div(2)));
 
-		this.lineWidth = p.lineWidth || 0.2;
-		this.lineColor = p.lineColor || '#ffffff';
-
-		this.coordinates = p.coordinates || false;
-	}
-
-	draw(ctx: CanvasRenderingContext2D, pos = Vector2.ZERO) {
+		const vpos = gm.camera.position.buf();
 		const tile = this.tile.buf().inc(this.scale);
 
-		const mar = pos.buf().mod(tile);
+		const mar = vpos.buf().mod(tile);
 		const counts = this.size.buf().add(mar).div(tile);
-
-		// ctx.save();
-		// ctx.fillStyle = `rgb(${Math.random()*255}, 100, 100)`;
-		// ctx.fillRect(Math.random() * 100, 0, 100, 100);
-		// ctx.restore();
-		ctx.save();
 
 
 		// clip area
@@ -58,13 +37,13 @@ export class GridMap {
 		ctx.lineWidth = this.lineWidth;
 		ctx.strokeStyle = this.lineColor;
 
-		for(let dx = pos.x > 1 ? 1:0; dx < counts.x; dx++) {
+		for(let dx = vpos.x > 1 ? 1:0; dx < counts.x; dx++) {
 			const x = this.offset.x - mar.x + dx*tile.x;
 			ctx.moveTo(x, this.offset.y);
 			ctx.lineTo(x, this.offset.y + this.size.y);
 		}
 
-		for(let dy = pos.y > 1 ? 1:0; dy < counts.y; dy++) {
+		for(let dy = vpos.y > 1 ? 1:0; dy < counts.y; dy++) {
 			const y = this.offset.y - mar.y + dy*tile.y;
 			ctx.moveTo(this.offset.x, y);
 			ctx.lineTo(this.offset.x + this.size.x, y);
@@ -88,16 +67,14 @@ export class GridMap {
 			ctx.globalAlpha = 0.4;
 
 			for(let dx = -1; dx < counts.x; dx++) {
-				const coordinates = Math.floor((pos.x*1.01 + dx*tile.x) / tile.x) * tile.x;
+				const coordinates = Math.floor((vpos.x*1.01 + dx*tile.x) / tile.x) * tile.x;
 				ctx.fillText(coordinates.toFixed(0), this.offset.x + 2 - mar.x + dx*tile.x, this.offset.y + pad.y);
 			};
 
 			for(let dy = -1; dy < counts.y; dy++) {
-				const coordinates = Math.floor((pos.y*1.01 + dy*tile.y) / tile.y) * tile.y;
+				const coordinates = Math.floor((vpos.y*1.01 + dy*tile.y) / tile.y) * tile.y;
 				ctx.fillText(coordinates.toFixed(0), this.offset.x + 2, this.offset.y + pad.y - mar.y + dy*tile.y);
 			}
 		}
-
-		ctx.restore();
 	}
 }

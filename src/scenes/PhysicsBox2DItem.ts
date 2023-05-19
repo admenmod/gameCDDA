@@ -26,13 +26,15 @@ export class PhysicsBox2DSystem extends System<typeof PhysicsBox2DItem> {
 
 		this['@add'].on(item => {
 			item.b2body = this.world.CreateBody(item.b2bodyDef);
-			item.b2body.CreateFixture(item.b2fixtureDef);
+			item.b2fixture = item.b2body.CreateFixture(item.b2fixtureDef);
 
 			item.b2_position = item.b2body.GetPosition();
 			item.b2_velosity = item.b2body.GetLinearVelocity();
 		});
 
-		// this['@removing'].on(item => {});
+		this['@removing'].on(item => {
+			this.world.DestroyBody(item.b2body!);
+		});
 
 		const PREORITY = 100;
 
@@ -92,15 +94,17 @@ export class PhysicsBox2DItem extends Node2D {
 	public b2bodyDef = new b2BodyDef();
 	public b2fixtureDef = new b2FixtureDef();
 
-	public b2body!: b2Body;
-	public b2fixture!: b2Fixture;
+	public b2body: b2Body | null = null;
+	public b2fixture: b2Fixture | null = null;
 
 	public b2_position!: b2Vec2;
 	public b2_velosity!: b2Vec2;
-	public get b2_angle(): number { return this.b2body.GetAngle() };
-	public set b2_angle(v: number) { this.b2body.SetAngle(v) };
-	public get b2_angularVelocity(): number { return this.b2body.GetAngularVelocity() };
-	public set b2_angularVelocity(v: number) { this.b2body.SetAngularVelocity(v) };
+	public get b2_angle(): number { return this.b2body!.GetAngle(); };
+	public set b2_angle(v: number) { this.b2body!.SetAngle(v); };
+	public get b2_angularVelocity(): number { return this.b2body!.GetAngularVelocity(); };
+	public set b2_angularVelocity(v: number) { this.b2body!.SetAngularVelocity(v); };
+
+	public pixelDensity = 20;
 
 
 	constructor() {
@@ -120,25 +124,23 @@ export class PhysicsBox2DItem extends Node2D {
 
 	protected async _init(): Promise<void> {
 		this.b2fixtureDef.density = 1;
-		this.b2fixtureDef.friction = 0.5;
+		this.b2fixtureDef.friction = 0.2;
 		this.b2fixtureDef.restitution = 0.2;
 
 		this.b2bodyDef.allowSleep = false;
 		this.b2bodyDef.type = 2;
 
-		this.b2bodyDef.position.Set(this.position.x, this.position.y);
+		this.b2bodyDef.position.Set(this.position.x/this.pixelDensity, this.position.y/this.pixelDensity);
 		this.b2bodyDef.angle = this.rotation;
 	}
 
 
 	public process(dt: number): void {
 		if(this.b2body) {
-			this.position.set(Vector2.from(this.b2body.GetPosition()));
+			this.position.set(Vector2.from(this.b2body.GetPosition()).inc(this.pixelDensity));
 			this.rotation = this.b2body.GetAngle();
 
 			super.process(dt);
-
-			// this.b2body.SetPosition(new b2Vec2(this.position.x, this.position.y));
 		}
 	}
 }

@@ -1,10 +1,10 @@
 import { Vector2 } from '@ver/Vector2';
 import { Event } from '@ver/events';
-import { NodeCell } from '@/scenes/nodes/NodeCell';
+import { Node2D } from '@/scenes/nodes/Node2D';
 import { Date } from '@/modules/Date';
 import type { Camera } from '@ver/Camera';
 import type { LayersList } from '@ver/CanvasLayer';
-import { Node2D } from '@/scenes/nodes/Node2D';
+import { NodeCell } from './NodeCell';
 
 
 export class World extends Node2D {
