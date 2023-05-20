@@ -61,10 +61,9 @@ export class MainScene extends Node2D {
 		gm.camera.process(dt, touches);
 	}
 
-
 	protected _draw(ctx: CanvasRenderingContext2D): void {
-		const center = Vector2.ZERO.buf().add(10, 10);
-		const a = 300;
+		const center = Vector2.ZERO.buf();
+		const a = 30;
 
 		ctx.beginPath();
 		ctx.strokeStyle = '#ffff00';

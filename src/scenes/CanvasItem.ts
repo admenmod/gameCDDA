@@ -26,15 +26,6 @@ export class RenderSystem extends System<typeof CanvasItem> {
 		const ctx = layers.main;
 		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-		// layers.main.translate(camera.position.x*camera.scale.x, camera.position.y*camera.scale.y);
-
-		// const center = camera.position.buf().add(camera.size.buf().div(1).inc(1||camera.scale));
-
-		// layers.main.beginPath();
-		// layers.main.rect(-gm.screen.x/2, -gm.screen.y/2, gm.screen.x, gm.screen.y);
-		// layers.main.clip();
-
-
 		for(let i = 0; i < this._items.length; i++) {
 			this._items[i].render(layers, camera);
 		}

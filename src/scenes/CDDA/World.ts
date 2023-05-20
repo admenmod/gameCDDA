@@ -9,7 +9,7 @@ import { NodeCell } from './NodeCell';
 
 export class World extends Node2D {
 	public size = new Vector2();
-	public cellsize = new Vector2(1, 1);
+	public cellsize = new Vector2(20, 20);
 
 	public all_nodes: NodeCell[] = [];
 	public active_nodes: NodeCell[] = [];

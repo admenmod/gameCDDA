@@ -4,10 +4,10 @@ import { TouchesController } from '@ver/TouchesController';
 import { CanvasLayer } from '@ver/CanvasLayer';
 import { MainLoop } from '@ver/MainLoop';
 import { Camera } from '@ver/Camera';
-import { KeyboardInputInterceptor } from '@ver/KeyboardInputInterceptor';
 import type { LayersList } from '@ver/CanvasLayer';
 
-import { MainScene } from '@/scenes/DATA_WING/MainScene';
+import { Node } from '@/scenes/Node';
+import { MainScene } from '@/scenes/MainScene';
 import { SensorCamera } from '@/modules/SensorCamera';
 
 import { ProcessSystem } from '@/scenes/Node';
@@ -34,16 +34,6 @@ for(let id in canvas.layers) {
 export const touches = new TouchesController(canvas);
 
 
-// export const hiddenInput = document.createElement('input');
-// hiddenInput.style.position = 'fixed';
-// hiddenInput.style.top = '-1000px';
-// canvas.append(hiddenInput);
-
-// export const keyboardInputInterceptor = new KeyboardInputInterceptor(hiddenInput);
-// keyboardInputInterceptor.init();
-// canvas.addEventListener('click', () => keyboardInputInterceptor.focus());
-
-
 export const gm = new class GameManager extends EventDispatcher {
 	public '@resize' = new Event<GameManager, [Vector2]>(this);
 	public '@camera.scale' = new Event<GameManager, [Vector2]>(this);
@@ -51,6 +41,8 @@ export const gm = new class GameManager extends EventDispatcher {
 
 	public screen = new Vector2(canvas.size);
 	public camera = new SensorCamera(new Camera(this.screen));
+
+	public root!: Node;
 
 
 	constructor() {
@@ -82,7 +74,6 @@ export const physicsBox2DSystem = new PhysicsBox2DSystem();
 mainLoop.on('update', dt => processSystem.update(dt), 25);
 mainLoop.on('update', dt => renderSystem.update(layers, gm.camera), 50);
 mainLoop.on('update', dt => touches.nullify(dt), 10000);
-
 mainLoop.on('update', dt => physicsBox2DSystem.update(16), 20);
 
 mainLoop.on('update', dt => {
@@ -94,20 +85,24 @@ mainLoop.on('update', dt => {
 
 
 (async () => {
+	await Node.load();
 	await MainScene.load();
 
-	// await import('@/webgl/main');
+	gm.root = new Node();
+	await gm.root.init();
 
 	const main_scene = new MainScene();
 	await main_scene.init();
 
-	processSystem.addRoot(main_scene);
-	renderSystem.addRoot(main_scene);
+	processSystem.addRoot(gm.root);
+	renderSystem.addRoot(gm.root);
+	physicsBox2DSystem.addRoot(gm.root);
 
-	physicsBox2DSystem.addRoot(main_scene);
+	gm.root.addChild(main_scene);
 
 	mainLoop.start();
 
 
+	// await import('@/webgl/main');
 	// await import('@/inspector/index');
 })();

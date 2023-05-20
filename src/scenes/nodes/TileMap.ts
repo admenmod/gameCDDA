@@ -4,7 +4,7 @@ import { Node2D } from '@/scenes/nodes/Node2D';
 
 
 export class TileMap extends Node2D {
-	public readonly size = new Vector2(1, 1);
+	public readonly size = new Vector2(20, 20);
 
 	private _cacheTile: { [id: number]: MapParser.Tileset } = {};
 
@@ -15,8 +15,6 @@ export class TileMap extends Node2D {
 		if(!this.map) return;
 
 		const map = this.map;
-
-		ctx.save();
 
 		for(let i = 0; i < map.layers.length; i++) {
 			const layer = map.layers[i];
@@ -66,7 +64,5 @@ export class TileMap extends Node2D {
 				);
 			}
 		}
-
-		ctx.restore();
 	}
 }

@@ -18,7 +18,7 @@ export class TextNode extends Node2D {
 	public get color() { return this._color; }
 	public set color(v) { this._color = v; }
 
-	protected linespace: number = 1;
+	protected linespace: number = 15;
 
 
 	protected _draw(ctx: CanvasRenderingContext2D): void {
