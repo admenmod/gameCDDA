@@ -1,13 +1,14 @@
 import { Vector2 } from '@ver/Vector2';
 import { Event } from '@ver/events';
+import type { Viewport } from '@ver/Viewport';
 import type { Touch } from '@ver/TouchesController';
 import { Node2D } from '@/scenes/nodes/Node2D';
 
-import { gm, touches } from '@/global';
+import { Input } from '@/global';
 
 
 export class Button extends Node2D {
-	public '@press' = new Event<Button, [pos: Vector2, touch: Touch]>(this);
+	public '@pressed' = new Event<Button, []>(this);
 
 
 	protected _text: string = '';
@@ -18,24 +19,27 @@ export class Button extends Node2D {
 
 	public style: Partial<CSSStyleRule['style']> = {};
 
+	protected async _init(this: Button): Promise<void> {
+		const fn = Input.on('press', tpos => {
+			const pos = this.globalPosition;
+			const size = this.size;
 
-	protected _process(dt: number): void {
-		const pos = this.globalPosition;
-		const size = this.size;
-		let touch: Touch | null = null;
-
-		if(touch = touches.findTouch()) {
-			const tpos = touch.pos.buf().sub(gm.screen.buf().div(2)).sub(gm.camera.position);
 			if(
-				tpos.x < pos.x + size.x/2 &&
-				tpos.x > pos.x - size.x/2 &&
-				tpos.y < pos.y + size.y/2 &&
-				tpos.y > pos.y - size.y/2
-			) this['@press'].emit(tpos, touch);
-		}
+				tpos.x < pos.x + size.x/2 && tpos.x > pos.x - size.x/2 &&
+				tpos.y < pos.y + size.y/2 && tpos.y > pos.y - size.y/2
+			) this['@pressed'].emit();
+		});
+
+		this.on('destroy', () => Input.off('press', fn));
 	}
 
-	protected _draw(ctx: CanvasRenderingContext2D): void {
+	protected _process(dt: number): void {
+		;
+	}
+
+	protected _draw(viewport: Viewport): void {
+		const ctx = viewport.ctx;
+
 		ctx.beginPath();
 		ctx.fillStyle = this.style.background || '#222222';
 		ctx.fillRect(-this.size.x/2, -this.size.y/2, this.size.x, this.size.y);

@@ -1,6 +1,7 @@
 import { Vector2 } from '@ver/Vector2';
 import { PhysicsBox2DItem } from '@/scenes/PhysicsBox2DItem';
 import { b2Shapes } from '@/modules/Box2DWrapper';
+import { Viewport } from '@ver/Viewport';
 
 
 export class Box extends PhysicsBox2DItem {
@@ -23,7 +24,7 @@ export class Box extends PhysicsBox2DItem {
 	}
 
 
-	protected _draw(ctx: CanvasRenderingContext2D) {
+	protected _draw({ ctx }: Viewport) {
 		ctx.fillStyle = '#11ee11';
 		ctx.fillRect(-this.size.x/2, -this.size.y/2, this.size.x, this.size.y);
 	}

@@ -1,9 +1,7 @@
 import { Event } from '@ver/events';
 import { System } from '@ver/System';
 import { Node } from '@/scenes/Node';
-import type { Camera } from '@ver/Camera';
-import type { LayersList } from '@ver/CanvasLayer';
-import {gm} from '@/global';
+import type { Viewport } from '@ver/Viewport';
 
 
 export class RenderSystem extends System<typeof CanvasItem> {
@@ -22,12 +20,11 @@ export class RenderSystem extends System<typeof CanvasItem> {
 
 	public _sort(a: CanvasItem, b: CanvasItem): number { return a.globalzIndex - b.globalzIndex; }
 
-	public update(layers: Record<string, CanvasRenderingContext2D>, camera: Camera) {
-		const ctx = layers.main;
-		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+	public update(viewport: Viewport) {
+		viewport.clear();
 
 		for(let i = 0; i < this._items.length; i++) {
-			this._items[i].render(layers, camera);
+			this._items[i].render(viewport);
 		}
 	}
 }
@@ -83,6 +80,21 @@ export class CanvasItem extends Node {
 		return acc;
 	}
 
+	public getRelativezIndex(nl: number = 0, arr: CanvasItem[] = this[PARENT_CACHE]): number {
+		const l = Math.min(nl, arr.length, Node.MAX_NESTING);
+		let acc = this.zIndex;
+
+		if(!this.zAsRelative) return acc;
+
+		for(let i = 0; i < l; i++) {
+			acc += arr[i].zIndex;
+
+			if(!arr[i].zAsRelative) return acc;
+		}
+
+		return acc;
+	}
+
 
 	constructor() {
 		super();
@@ -99,11 +111,11 @@ export class CanvasItem extends Node {
 	}
 
 
-	protected _render(layers: LayersList, camera: Camera): void {}
+	protected _render(viewport: Viewport): void {}
 
-	public render(layers: LayersList, camera: Camera): void {
+	public render(viewport: Viewport): void {
 		if(!this._visible) return;
 
-		this._render(layers, camera);
+		this._render(viewport);
 	}
 }

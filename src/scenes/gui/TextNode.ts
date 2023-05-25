@@ -1,5 +1,7 @@
-import { Node2D } from '@/scenes/nodes/Node2D';
 import { Vector2 } from '@ver/Vector2';
+import { Viewport } from '@ver/Viewport';
+
+import { Node2D } from '@/scenes/nodes/Node2D';
 
 
 export class TextNode extends Node2D {
@@ -21,7 +23,7 @@ export class TextNode extends Node2D {
 	protected linespace: number = 15;
 
 
-	protected _draw(ctx: CanvasRenderingContext2D): void {
+	protected _draw({ ctx }: Viewport): void {
 		ctx.beginPath();
 		ctx.fillStyle = this.color;
 		ctx.font = '15px arkhip';

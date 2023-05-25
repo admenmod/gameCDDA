@@ -1,9 +1,9 @@
 import { Vector2 } from '@ver/Vector2';
 import { Event } from '@ver/events';
+import type { Viewport } from '@ver/Viewport';
+
 import { Node2D } from '@/scenes/nodes/Node2D';
 import { Date } from '@/modules/Date';
-import type { Camera } from '@ver/Camera';
-import type { LayersList } from '@ver/CanvasLayer';
 import { NodeCell } from './NodeCell';
 
 
@@ -99,21 +99,5 @@ export class World extends Node2D {
 
 	public getDistance(node1: NodeCell, node2: NodeCell): number {
 		return node1.cellpos.getDistance(node2.cellpos);
-	}
-
-
-	protected _process(dt: number): void {
-		for(let i = 0; i < this.all_nodes.length; i++) {
-			for(let j = i + 1; j < this.all_nodes.length; j++) {
-				const node1 = this.all_nodes[i];
-				const node2 = this.all_nodes[j];
-			}
-		}
-	}
-
-	protected _render(layers: LayersList, camera: Camera): void {
-		for(let i = 0; i < this.all_nodes.length; i++) {
-			// this.all_nodes[i].render(layers, camera);
-		}
 	}
 }

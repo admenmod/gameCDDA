@@ -20,6 +20,8 @@ export class ProcessSystem extends System<typeof Node> {
 
 	public _sort(a: Node, b: Node): number { return a.processPriority - b.processPriority; }
 
+	public input() {}
+
 	public update(dt: number) {
 		for(let i = 0; i < this._items.length; i++) {
 			this._items[i].process(dt);
@@ -61,6 +63,11 @@ export class Node extends Scene {
 		this['@tree_exiting'].on(ontree);
 	}
 
+	protected _input(): void {}
+
+	public input(): void {
+		this._input();
+	}
 
 	protected _process(dt: number): void {}
 

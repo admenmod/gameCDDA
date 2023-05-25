@@ -7,7 +7,7 @@ import { CanvasItem } from '@/scenes/CanvasItem';
 
 const PARENT_CACHE = Symbol('PARENT_CACHE');
 
-export class Node2D extends CanvasItem {
+export class Control extends CanvasItem {
 	public set '%position'(v: Vector2) { this.position.set(v); }
 	public get '%position'(): Vector2 { return this.position.buf(); }
 
@@ -18,7 +18,7 @@ export class Node2D extends CanvasItem {
 	public get '%scale'(): Vector2 { return this.scale.buf(); }
 
 
-	protected [PARENT_CACHE]: Node2D[] = [];
+	protected [PARENT_CACHE]: Control[] = [];
 
 
 	public positionAsRelative: boolean = true;
@@ -45,7 +45,7 @@ export class Node2D extends CanvasItem {
 
 		const ontree = () => {
 			this[PARENT_CACHE].length = 0;
-			this[PARENT_CACHE].push(...this.getChainOwnersOf(Node2D));
+			this[PARENT_CACHE].push(...this.getChainOwnersOf(Control));
 		};
 
 		ontree();
@@ -60,13 +60,13 @@ export class Node2D extends CanvasItem {
 	public get globalRotation(): number { return this.getRelativeRotation(Node.MAX_NESTING); }
 
 
-	public getRelativePosition(nl: number = 0, arr: Node2D[] = this[PARENT_CACHE]): Vector2 {
+	public getRelativePosition(nl: number = 0, arr: Control[] = this[PARENT_CACHE]): Vector2 {
 		if(!this.positionAsRelative) return this.position.buf();
 
 		const l = Math.min(nl, arr.length, Node.MAX_NESTING);
 		const acc = new Vector2();
 
-		let prev: Node2D = this, next: Node2D | null = null;
+		let prev: Control = this, next: Control | null = null;
 
 		if(!arr.length) acc.add(this.position);
 
@@ -91,7 +91,7 @@ export class Node2D extends CanvasItem {
 		return acc;
 	}
 
-	public getRelativeScale(nl: number = 0, arr: Node2D[] = this[PARENT_CACHE]): Vector2 {
+	public getRelativeScale(nl: number = 0, arr: Control[] = this[PARENT_CACHE]): Vector2 {
 		if(!this.scaleAsRelative) return this.scale.buf();
 
 		const l = Math.min(nl, arr.length, Node.MAX_NESTING);
@@ -106,7 +106,7 @@ export class Node2D extends CanvasItem {
 		return acc;
 	}
 
-	public getRelativeRotation(nl: number = 0, arr: Node2D[] = this[PARENT_CACHE]): number {
+	public getRelativeRotation(nl: number = 0, arr: Control[] = this[PARENT_CACHE]): number {
 		if(!this.rotationAsRelative) return this.rotation;
 
 		const l = Math.min(nl, arr.length, Node.MAX_NESTING);
@@ -134,6 +134,7 @@ export class Node2D extends CanvasItem {
 		const pivot = this.pivot_offset.buf();
 
 
+		viewport.ctx.scale(scale.x, scale.y);
 		viewport.ctx.translate(pos.x, pos.y);
 
 		if(pivot.x !== 0 || pivot.y !== 0) {
@@ -141,8 +142,6 @@ export class Node2D extends CanvasItem {
 			viewport.ctx.rotate(rot);
 			viewport.ctx.translate(-pivot.x, -pivot.y);
 		} else viewport.ctx.rotate(rot);
-
-		viewport.ctx.scale(scale.x, scale.y);
 
 
 		this._draw(viewport);

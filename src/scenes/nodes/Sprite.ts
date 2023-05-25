@@ -1,7 +1,7 @@
 import { Event } from '@ver/events';
+import type { Viewport } from '@ver/Viewport';
+
 import { Node2D } from './Node2D';
-import type { Camera } from '@ver/Camera';
-import type { LayersList } from '@ver/CanvasLayer';
 import { loadImage } from '@ver/helpers';
 
 
@@ -20,7 +20,7 @@ export class Sprite extends Node2D {
 		this.image = await loadImage(...args);
 	}
 
-	protected _draw(ctx: CanvasRenderingContext2D): void {
+	protected _draw({ ctx }: Viewport): void {
 		if(!this.image) return;
 
 		ctx.drawImage(this.image, -this.width/2, -this.height/2, this.width, this.height);

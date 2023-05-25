@@ -1,7 +1,7 @@
 import { Vector2 } from '@ver/Vector2';
+import type { Viewport } from '@ver/Viewport';
+
 import { Node2D } from '@/scenes/nodes/Node2D';
-import type { LayersList } from '@ver/CanvasLayer';
-import type { Camera } from '@ver/Camera';
 
 
 export class Popup extends Node2D {
@@ -23,7 +23,7 @@ export class Popup extends Node2D {
 		else this.timeout -= dt;
 	}
 
-	protected _draw(ctx: CanvasRenderingContext2D): void {
+	protected _draw({ ctx }: Viewport): void {
 		ctx.globalAlpha = this.alpha;
 
 		ctx.fillStyle = '#222222';
@@ -80,7 +80,8 @@ export class PopupContainer extends Node2D {
 		}
 	}
 
-	protected _render(layers: LayersList, camera: Camera): void {
-		for(let i = 0; i < this.popups.length; i++) this.popups[i].render(layers, camera);
+	protected _render(viewport: Viewport): void {
+		super._render(viewport);
+		for(let i = 0; i < this.popups.length; i++) this.popups[i].render(viewport);
 	}
 }

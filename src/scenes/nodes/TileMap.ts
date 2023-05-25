@@ -1,4 +1,6 @@
 import { Vector2 } from '@ver/Vector2';
+import type { Viewport } from '@ver/Viewport';
+
 import { MapParser } from '@ver/MapParser';
 import { Node2D } from '@/scenes/nodes/Node2D';
 
@@ -11,7 +13,7 @@ export class TileMap extends Node2D {
 	public map: MapParser.Map | null = null;
 
 
-	protected _draw(ctx: CanvasRenderingContext2D): void {
+	protected _draw({ ctx }: Viewport): void {
 		if(!this.map) return;
 
 		const map = this.map;
@@ -52,10 +54,10 @@ export class TileMap extends Node2D {
 
 				const size = this.size.buf();
 
-				const tileoffset = new Vector2(tc).inc(tileset.tile_size);
-				const tilesize = new Vector2(tileset.tile_size);
-				const drawsize = new Vector2(size);
-				const drawpos = new Vector2(l).inc(size).sub(drawsize.buf().div(2));
+				const tileoffset = tc.buf().inc(tileset.tile_size);
+				const tilesize = tileset.tile_size.buf();
+				const drawsize = size.buf();
+				const drawpos = l.buf().inc(size).sub(drawsize.buf().div(2));
 
 				ctx.drawImage(
 					tileset.imagedata,

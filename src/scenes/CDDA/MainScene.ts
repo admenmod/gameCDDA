@@ -1,5 +1,7 @@
 import { Vector2 } from '@ver/Vector2';
 import { Event } from '@ver/events';
+import type { Viewport } from '@ver/Viewport';
+
 import { MapParser } from '@ver/MapParser';
 import { KeyboardInputInterceptor } from '@ver/KeyboardInputInterceptor';
 import { KeymapperOfActions, MappingsMode } from '@ver/KeymapperOfActions';
@@ -74,8 +76,6 @@ export class MainScene extends Node2D {
 
 
 	public async _init(this: MainScene): Promise<void> {
-		// this.position.set(gm.screen.buf().div(2));
-
 		this.getChild('TileMap')!.map = MainScene.map;
 
 
@@ -103,6 +103,15 @@ export class MainScene extends Node2D {
 		this.keymapperOfActions = new KeymapperOfActions(this.normal_mode);
 		this.keymapperOfActions.init(keyboardInputInterceptor);
 		this.keymapperOfActions.enable();
+
+
+		const updateOnResize = (size: Vector2) => {
+			this.gridMap.size.set(size);
+		};
+
+		updateOnResize(gm.viewport.size);
+
+		gm.on('resize', updateOnResize);
 
 
 		await super._init();
@@ -241,13 +250,15 @@ dblclick - полноэкранный режим
 	protected _process(this: MainScene, dt: number): void {
 		this.keymapperOfActions.update(dt);
 
-		gm.camera.position.moveTime(this.player.globalPosition, 10);
-		gm.camera.process(dt, touches);
+		gm.viewport.position.moveTime(this.player.globalPosition, 10);
+		// gm.camera.process(dt, touches);
 
 		this.textdata.text = 'DATE: '+this.world.date.getTimeString();
 	}
 
-	protected _draw(this: MainScene, ctx: CanvasRenderingContext2D): void {
+	protected _draw(this: MainScene, { ctx, size }: Viewport): void {
+		ctx.resetTransform();
+
 		const center = Vector2.ZERO;
 
 		let a = 30;
@@ -269,6 +280,6 @@ dblclick - полноэкранный режим
 
 		ctx.fillStyle = '#eeeeee';
 		ctx.font = '15px arkhip';
-		ctx.fillText(this.keymapperOfActions.acc.join(''), 10, gm.screen.y-10);
+		ctx.fillText(this.keymapperOfActions.acc.join(''), 10, size.y-10);
 	}
 }

@@ -1,4 +1,6 @@
 import { Vector2 } from '@ver/Vector2';
+import type { Viewport } from '@ver/Viewport';
+
 import { NodeCell } from './NodeCell';
 
 
@@ -31,7 +33,7 @@ export class Player extends NodeCell {
 	}
 
 
-	protected _draw(ctx: CanvasRenderingContext2D) {
+	protected _draw({ ctx }: Viewport) {
 		ctx.fillStyle = '#ee1111';
 		ctx.fillRect(-this.size.x/2, -this.size.y/2, this.size.x, this.size.y);
 	}
