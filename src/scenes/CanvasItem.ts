@@ -52,6 +52,10 @@ export class CanvasItem extends Node {
 	public get visible() { return this._visible; }
 	public set visible(v) { this._visible = v; }
 
+	private _alpha: number = 1;
+	public set alpha(v) { this._alpha = Math.min(1, Math.max(0, v)); }
+	public get alpha() { return this._alpha; }
+
 	protected _zAsRelative: boolean = true;
 	public get zAsRelative() { return this._zAsRelative; }
 	public set zAsRelative(v) {
@@ -103,8 +107,6 @@ export class CanvasItem extends Node {
 			this[PARENT_CACHE].length = 0;
 			this[PARENT_CACHE].push(...this.getChainOwnersOf(CanvasItem));
 		};
-
-		ontree();
 
 		this['@tree_entered'].on(ontree);
 		this['@tree_exiting'].on(ontree);

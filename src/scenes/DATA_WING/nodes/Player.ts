@@ -21,17 +21,18 @@ export class Player extends PhysicsBox2DItem {
 	}}
 
 	protected async _init(): Promise<void> {
+		await super._init();
+
 		const shape = new b2Shapes.b2CircleShape();
 		shape.SetRadius(this.size.y/this.pixelDensity/2);
 
 		this.b2fixtureDef.shape = shape;
 
 
-		// const sprite = this.getChild('Sprite')!;
-		//
+		// const sprite = this.get('Sprite');
 		// sprite.load('assets/img/player.png');
-
-		await super._init();
+		//
+		// sprite.scale.inc(2);
 	}
 
 	protected _process(dt: number): void {

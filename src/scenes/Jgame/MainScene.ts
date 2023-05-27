@@ -16,6 +16,7 @@ import { Joystick } from '@/scenes/gui/Joystick';
 import { SensorCamera } from '@/modules/SensorCamera';
 import { Button } from '@/scenes/gui/Button';
 import { Camera2D } from '@/scenes/nodes/Camera2D';
+import { BulletContainer } from './nodes/Bullet';
 
 
 export class MainScene extends Node2D {
@@ -24,16 +25,18 @@ export class MainScene extends Node2D {
 
 	public TREE() { return {
 		GridMap,
-		Player, PopupContainer,
+		Player,
+
+		PopupContainer,
+		BulletContainer,
 
 		Box1: Box,
 		Box2: Box,
 		Box3: Box,
 		Box4: Box,
 
-		'CheckBoxControl': Button,
-
-		Joystick,
+		JoystickBody: Joystick,
+		JoystickHead: Joystick,
 
 		SystemInfo
 	}}
@@ -42,8 +45,9 @@ export class MainScene extends Node2D {
 	private get gridMap() { return this.get('GridMap'); }
 	private get player() { return this.get('Player'); }
 	private get popups() { return this.get('PopupContainer'); }
-	private get joystick() { return this.get('Joystick'); }
-	private get checkBoxControl() { return this.get('CheckBoxControl'); }
+	private get bullets() { return this.get('BulletContainer'); }
+	private get joystickBody() { return this.get('JoystickBody'); }
+	private get joystickHead() { return this.get('JoystickHead'); }
 
 
 	protected async _init(this: MainScene): Promise<void> {
@@ -52,20 +56,21 @@ export class MainScene extends Node2D {
 		this.gridMap.tile.set(60);
 		this.gridMap.coordinates = true;
 
-		this.joystick.position.set(gm.screen.buf().div(2).sub(90));
+		const size = gm.screen.buf().div(2);
+		const cs = 100;
+		this.joystickBody.position.set(size.buf().inc(-1, 1).sub(-cs, cs));
+		this.joystickHead.position.set(size.buf().sub(cs));
 
 		this.get('Box1')!.position.set(100, -270);
 		this.get('Box1')!.size.inc(4);
 
-		this.get('Player')!.position.set(-100, 150);
-
-
-		this.checkBoxControl.text = 'control to joystick';
-		this.checkBoxControl.position.add(-100, -50);
-		this.checkBoxControl.size.add(50, 5);
-		this.checkBoxControl.on('pressed', () => {
-			this.player.control_is_touch = !this.player.control_is_touch;
-			this.checkBoxControl.text = this.player.control_is_touch ? 'control to joystick' : 'control to touch';
+		this.player.position.set(-100, 150);
+		this.player.on('shoot', o => {
+			this.bullets.createItem(
+				o.globalPosition.moveAngle(20, o.head.globalRotation - Math.PI/2).div(o.pixelDensity),
+				o.head.globalRotation - Math.PI/2,
+				0.1
+			);
 		});
 
 
@@ -98,15 +103,8 @@ export class MainScene extends Node2D {
 		// gm.viewport.position.moveTime(this.player.globalPosition, 10);
 		// gm.viewport.rotation += (this.player.globalRotation - gm.viewport.rotation) / 10;
 
-		const angle = this.joystick.angle;
-		if(this.joystick.touch && !this.player.control_is_touch) {
-			const dir = Math.abs(angle) < Math.PI/2 ? 1 : -1;
-			const dira = Math.sign(angle);
-
-			const a = Math.abs(angle) < Math.PI/2 ? Math.abs(angle) : -Math.PI/2 / Math.abs(angle);
-
-			this.player.moveAngle(this.joystick.value / 10000*2 * dir, (a * dira) / 10000);
-		}
+		this.player.moveAngle(this.joystickBody, dt);
+		this.player.headMove(this.joystickHead, dt);
 	}
 
 	protected _draw({ ctx }: Viewport): void {
@@ -125,6 +123,6 @@ export class MainScene extends Node2D {
 
 		ctx.beginPath();
 		ctx.fillStyle = '#eeeeee';
-		ctx.fillText((this.joystick.angle / (Math.PI/180)).toFixed(), 20, 70);
+		ctx.fillText((this.joystickBody.angle / (Math.PI/180)).toFixed(), 20, 70);
 	}
 }

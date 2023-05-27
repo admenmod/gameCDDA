@@ -5,7 +5,7 @@ import { Node } from '@/scenes/Node';
 import { CanvasItem } from '@/scenes/CanvasItem';
 
 
-const PARENT_CACHE = Symbol('PARENT_CACHE');
+export const PARENT_CACHE = Symbol('PARENT_CACHE');
 
 export class Node2D extends CanvasItem {
 	public set '%position'(v: Vector2) { this.position.set(v); }
@@ -45,10 +45,8 @@ export class Node2D extends CanvasItem {
 
 		const ontree = () => {
 			this[PARENT_CACHE].length = 0;
-			this[PARENT_CACHE].push(...this.getChainOwnersOf(Node2D));
+			this[PARENT_CACHE].push(...this.getChainParentsOf(Node2D));
 		};
-
-		ontree();
 
 		this['@tree_entered'].on(ontree);
 		this['@tree_exiting'].on(ontree);
@@ -131,7 +129,7 @@ export class Node2D extends CanvasItem {
 		const scale = this.globalScale;
 		const pos = this.globalPosition;
 		const rot = this.globalRotation;
-		const pivot = this.pivot_offset.buf();
+		const pivot = this.pivot_offset;
 
 
 		viewport.ctx.translate(pos.x, pos.y);

@@ -9,10 +9,6 @@ export class Popup extends Node2D {
 
 	public size = new Vector2(1, 1);
 
-	private _alpha: number = 1;
-	public set alpha(v) { this._alpha = Math.min(1, Math.max(0, v)); }
-	public get alpha() { return this._alpha; }
-
 	public timeout: number = 3000;
 
 	private _catchTextMetrics: TextMetrics | null = null;

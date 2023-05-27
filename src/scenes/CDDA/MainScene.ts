@@ -58,25 +58,25 @@ export class MainScene extends Node2D {
 
 
 	// aliases
-	private get gridMap() { return this.getChild('GridMap')!; }
+	private get gridMap() { return this.get('GridMap'); }
 
-	private get world() { return this.getChild('World')!; }
-	private get tilemap() { return this.getChild('TileMap')!; }
-	private get player() { return this.getChild('Player')!; }
-	private get popups() { return this.getChild('PopupContainer')!; }
+	private get world() { return this.get('World'); }
+	private get tilemap() { return this.get('TileMap'); }
+	private get player() { return this.get('Player'); }
+	private get popups() { return this.get('PopupContainer'); }
 
-	private get apple1() { return this.getChild('Apple1')!; }
-	private get apple2() { return this.getChild('Apple2')!; }
-	private get apple3() { return this.getChild('Apple3')!; }
-	private get apple4() { return this.getChild('Apple4')!; }
-	private get apple5() { return this.getChild('Apple5')!; }
+	private get apple1() { return this.get('Apple1'); }
+	private get apple2() { return this.get('Apple2'); }
+	private get apple3() { return this.get('Apple3'); }
+	private get apple4() { return this.get('Apple4'); }
+	private get apple5() { return this.get('Apple5'); }
 
-	private get textdata() { return this.getChild('textdata')!; }
-	private get texthelp() { return this.getChild('texthelp')!; }
+	private get textdata() { return this.get('textdata'); }
+	private get texthelp() { return this.get('texthelp'); }
 
 
 	public async _init(this: MainScene): Promise<void> {
-		this.getChild('TileMap')!.map = MainScene.map;
+		this.get('TileMap')!.map = MainScene.map;
 
 
 		const hiddenInput = document.createElement('input');

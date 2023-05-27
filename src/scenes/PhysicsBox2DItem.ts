@@ -115,14 +115,14 @@ export class PhysicsBox2DItem extends Node2D {
 			this[PARENT_CACHE].push(...this.getChainOwnersOf(PhysicsBox2DItem));
 		};
 
-		ontree();
-
 		this['@tree_entered'].on(ontree);
 		this['@tree_exiting'].on(ontree);
 	}
 
 
 	protected async _init(): Promise<void> {
+		await super._init();
+
 		this.b2fixtureDef.density = 1;
 		this.b2fixtureDef.friction = 0.2;
 		this.b2fixtureDef.restitution = 0.2;

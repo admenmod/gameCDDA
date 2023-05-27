@@ -8,6 +8,7 @@ import { TextNode } from '@/scenes/gui/TextNode';
 
 import { MainScene as DATA_WING_Scene } from './DATA_WING/MainScene';
 import { MainScene as GAME_CDDA_Scene } from './CDDA/MainScene';
+import { MainScene as Jgame_Scene } from './Jgame/MainScene';
 
 import { gm } from '@/global';
 
@@ -15,13 +16,27 @@ import { gm } from '@/global';
 export class MainScene extends Node2D {
 	public TREE() { return {
 		'DATA_WING': Button,
-		'gameCDDA': Button
+		'gameCDDA': Button,
+		'Jgame': Button
 	}}
 
 
 	public async _init(this: MainScene): Promise<void> {
 		this.name = 'Menu';
 
+		const updateOnResize = (size: Vector2) => {
+			;
+		};
+
+		updateOnResize(gm.screen);
+
+		gm.on('resize', updateOnResize);
+
+
+		await super._init();
+	}
+
+	protected _ready(this: MainScene): void {
 		this.getChild('DATA_WING')!.position.add(0, -20);
 		this.getChild('DATA_WING')!.text = 'DATA WING';
 		this.getChild('DATA_WING')!.on('pressed', async () => {
@@ -52,20 +67,20 @@ export class MainScene extends Node2D {
 			this.destroy();
 		});
 
-		const updateOnResize = (size: Vector2) => {
-			;
-		};
+		this.getChild('Jgame')!.position.add(0, 60);
+		this.getChild('Jgame')!.text = 'Jgame';
+		this.getChild('Jgame')!.on('pressed', async () => {
+			const parent = this.parent!;
+			parent.removeChild(this.name);
 
-		updateOnResize(gm.screen);
+			await Jgame_Scene.load();
+			const scene = new Jgame_Scene();
+			await scene.init();
 
-		gm.on('resize', updateOnResize);
+			parent!.addChild(scene);
 
-
-		await super._init();
-	}
-
-	protected _ready(this: MainScene): void {
-		;
+			this.destroy();
+		});
 	}
 
 	protected _process(this: MainScene, dt: number): void {
