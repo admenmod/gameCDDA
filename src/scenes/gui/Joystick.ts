@@ -30,16 +30,7 @@ export class Joystick extends Node2D {
 
 
 	protected async _init(this: Joystick): Promise<void> {
-		this.based_on_camera_position = false;
-		this.based_on_camera_rotation = false;
-		this.based_on_camera_scale = false;
-
-		this.positionAsRelative = false;
-		this.rotationAsRelative = false;
-		this.scaleAsRelative = false;
-
-
-		const fnpress = Input.on('press', (_, tpos, touch) => {
+		const fnpress = Input.on('press', (tpos, _, touch) => {
 			if(!this.touch && this.globalPosition.getDistance(tpos) < this.radius0) {
 				this.touch = touch;
 			}
@@ -50,23 +41,23 @@ export class Joystick extends Node2D {
 
 				this.core_offset.set(new Vector2().moveAngle(
 					Math.min(l, this.radius0-this.radius1),
-					pos.getAngleRelative(tpos)
+					pos.getAngleRelative(tpos) - this.globalRotation
 				));
 			}
 		});
 
-		const fnup = Input.on('up', (_, tpos, touch) => {
+		const fnup = Input.on('up', (tpos, _, touch) => {
 			if(this.touch === touch) this.touch = null;
 		});
 
-		const fnmove = Input.on('move', (_, tpos, touch) => {
+		const fnmove = Input.on('move', (tpos, _, touch) => {
 			if(this.touch === touch) {
 				const pos = this.globalPosition;
 				const l = pos.getDistance(tpos);
 
 				this.core_offset.set(new Vector2().moveAngle(
 					Math.min(l, this.radius0-this.radius1),
-					pos.getAngleRelative(tpos)
+					pos.getAngleRelative(tpos) - this.globalRotation
 				));
 			}
 		});

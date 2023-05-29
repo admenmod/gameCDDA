@@ -17,6 +17,7 @@ export class Bullet extends PhysicsBox2DItem {
 		const shape = new b2Shapes.b2CircleShape();
 		shape.SetRadius(this.size.y/this.pixelDensity/2);
 
+		this.b2bodyDef.type = 2;
 		this.b2bodyDef.bullet = true;
 		this.b2bodyDef.allowSleep = false;
 		this.b2bodyDef.fixedRotation = true;

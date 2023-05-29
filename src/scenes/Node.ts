@@ -54,7 +54,7 @@ export class Node extends Scene {
 
 		const ontree = () => {
 			this[PARENT_CACHE].length = 0;
-			this[PARENT_CACHE].push(...this.getChainOwnersOf(Node));
+			this[PARENT_CACHE].push(...this.getChainParentsOf(Node));
 		};
 
 		ontree();

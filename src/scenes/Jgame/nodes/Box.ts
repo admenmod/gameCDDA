@@ -10,6 +10,9 @@ export class Box extends PhysicsBox2DItem {
 	protected async _init(): Promise<void> {
 		await super._init();
 
+		this.b2bodyDef.type = 2;
+		this.b2bodyDef.allowSleep = false;
+
 		const shape = new b2Shapes.b2PolygonShape();
 		shape.SetAsBox(this.size.x/this.pixelDensity/2, this.size.y/this.pixelDensity/2);
 

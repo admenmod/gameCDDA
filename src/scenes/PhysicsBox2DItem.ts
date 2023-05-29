@@ -30,6 +30,8 @@ export class PhysicsBox2DSystem extends System<typeof PhysicsBox2DItem> {
 
 			item.b2_position = item.b2body.GetPosition();
 			item.b2_velosity = item.b2body.GetLinearVelocity();
+
+			item['@PhysicsBox2D:init'].emit();
 		});
 
 		this['@removing'].on(item => {
@@ -83,6 +85,8 @@ const PARENT_CACHE = Symbol('PARENT_CACHE');
 export class PhysicsBox2DItem extends Node2D {
 	protected [PARENT_CACHE]: PhysicsBox2DItem[] = [];
 
+	public '@PhysicsBox2D:init' = new Event<PhysicsBox2DItem, []>(this);
+
 	public '@BeginContact' = new Event<PhysicsBox2DItem, [b2Contacts.b2Contact]>(this);
 	public '@EndContact' = new Event<PhysicsBox2DItem, [b2Contacts.b2Contact]>(this);
 	public '@PostSolve' = new Event<PhysicsBox2DItem, [b2Contacts.b2Contact, b2ContactImpulse]>(this);
@@ -112,7 +116,7 @@ export class PhysicsBox2DItem extends Node2D {
 
 		const ontree = () => {
 			this[PARENT_CACHE].length = 0;
-			this[PARENT_CACHE].push(...this.getChainOwnersOf(PhysicsBox2DItem));
+			this[PARENT_CACHE].push(...this.getChainParentsOf(PhysicsBox2DItem));
 		};
 
 		this['@tree_entered'].on(ontree);
@@ -126,9 +130,6 @@ export class PhysicsBox2DItem extends Node2D {
 		this.b2fixtureDef.density = 1;
 		this.b2fixtureDef.friction = 0.2;
 		this.b2fixtureDef.restitution = 0.2;
-
-		this.b2bodyDef.allowSleep = false;
-		this.b2bodyDef.type = 2;
 
 		this.b2bodyDef.position.Set(this.position.x/this.pixelDensity, this.position.y/this.pixelDensity);
 		this.b2bodyDef.angle = this.rotation;

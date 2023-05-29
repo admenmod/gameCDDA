@@ -45,7 +45,7 @@ export class Control extends CanvasItem {
 
 		const ontree = () => {
 			this[PARENT_CACHE].length = 0;
-			this[PARENT_CACHE].push(...this.getChainOwnersOf(Control));
+			this[PARENT_CACHE].push(...this.getChainParentsOf(Control));
 		};
 
 		ontree();

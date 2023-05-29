@@ -27,6 +27,9 @@ export class Player extends PhysicsBox2DItem {
 	protected async _init(this: Player): Promise<void> {
 		await super._init();
 
+		this.b2bodyDef.allowSleep = false;
+		this.b2bodyDef.type = 2;
+
 		const shape = new b2Shapes.b2CircleShape();
 		shape.SetRadius(this.size.y/this.pixelDensity/2);
 
@@ -36,7 +39,7 @@ export class Player extends PhysicsBox2DItem {
 
 
 		const body_sprite = this.get('body');
-		body_sprite.load('assets/img/player.png');
+		await body_sprite.load('assets/img/player.png');
 
 		body_sprite.scale.inc(2);
 

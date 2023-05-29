@@ -18,7 +18,7 @@ export class RenderSystem extends System<typeof CanvasItem> {
 		this['@removing'].on(item => item.off('change%zIndex', zIndex));
 	}
 
-	public _sort(a: CanvasItem, b: CanvasItem): number { return a.globalzIndex - b.globalzIndex; }
+	protected _sort(a: CanvasItem, b: CanvasItem): number { return a.globalzIndex - b.globalzIndex; }
 
 	public update(viewport: Viewport) {
 		viewport.clear();
@@ -30,7 +30,7 @@ export class RenderSystem extends System<typeof CanvasItem> {
 }
 
 
-const PARENT_CACHE = Symbol('PARENT_CACHE');
+export const PARENT_CACHE = Symbol('PARENT_CACHE');
 
 export class CanvasItem extends Node {
 	public set '%visible'(v: boolean) { this.visible = v; }
@@ -49,7 +49,12 @@ export class CanvasItem extends Node {
 
 
 	protected _visible: boolean = true;
-	public get visible() { return this._visible; }
+	public get visible() {
+		for(let i = 0; i < this[PARENT_CACHE].length; i++) {
+			if(!this[PARENT_CACHE][i]._visible) return false;
+		}
+		return this._visible;
+	}
 	public set visible(v) { this._visible = v; }
 
 	private _alpha: number = 1;
@@ -73,16 +78,7 @@ export class CanvasItem extends Node {
 	}
 
 
-	public get globalzIndex(): number {
-		if(!this.zAsRelative) return this.zIndex;
-
-		const chain = this[PARENT_CACHE];
-		let acc = 0;
-		for(let i = chain.length-1; i >= 0; i--) {
-			acc += chain[i].zIndex;
-		}
-		return acc;
-	}
+	public get globalzIndex(): number { return this.getRelativezIndex(Node.MAX_NESTING, this[PARENT_CACHE]); }
 
 	public getRelativezIndex(nl: number = 0, arr: CanvasItem[] = this[PARENT_CACHE]): number {
 		const l = Math.min(nl, arr.length, Node.MAX_NESTING);
@@ -105,7 +101,7 @@ export class CanvasItem extends Node {
 
 		const ontree = () => {
 			this[PARENT_CACHE].length = 0;
-			this[PARENT_CACHE].push(...this.getChainOwnersOf(CanvasItem));
+			this[PARENT_CACHE].push(...this.getChainParentsOf(CanvasItem));
 		};
 
 		this['@tree_entered'].on(ontree);
@@ -116,7 +112,7 @@ export class CanvasItem extends Node {
 	protected _render(viewport: Viewport): void {}
 
 	public render(viewport: Viewport): void {
-		if(!this._visible) return;
+		if(!this.visible) return;
 
 		this._render(viewport);
 	}

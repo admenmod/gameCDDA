@@ -13,7 +13,7 @@ export class Camera2D extends Node2D {
 
 
 	protected _process(dt: number): void {
-		if(this.viewport) {
+		if(this.viewport && this.current) {
 			this.viewport.position.set(this.globalPosition);
 			this.viewport.scale.set(this.globalScale);
 			this.viewport.rotation = this.globalRotation;
