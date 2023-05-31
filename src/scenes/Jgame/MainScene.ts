@@ -3,12 +3,12 @@ import type { Viewport } from '@ver/Viewport';
 
 import { Node } from '@/scenes/Node';
 import { Node2D } from '@/scenes/nodes/Node2D';
-import { Popup, PopupContainer } from '@/scenes/nodes/Popup';
+import { PopupContainer } from '@/scenes/nodes/Popup';
 import { Player } from './nodes/Player';
 
 import { GridMap } from '@/scenes/gui/GridMap';
 import { SystemInfo } from '@/scenes/gui/SystemInfo';
-import { touches, gm } from '@/global';
+import { gm } from '@/global';
 
 import { TextNode } from '@/scenes/gui/TextNode';
 import { Box } from './nodes/Box';
@@ -18,7 +18,14 @@ import { Camera2D } from '../nodes/Camera2D';
 import { Button } from '@/scenes/gui/Button';
 import { BulletContainer } from './nodes/Bullet';
 import { Car } from './nodes/Car';
+import { Tank } from './nodes/Tank';
 import { b2Vec2 } from '@/modules/Box2DWrapper';
+import { PhysicsBox2DItem } from '../PhysicsBox2DItem';
+
+
+type ITransport = PhysicsBox2DItem & {
+	control(dt: number, joystickL: Joystick, joystickR: Joystick): void;
+};
 
 
 export class MainScene extends Node2D {
@@ -27,9 +34,11 @@ export class MainScene extends Node2D {
 		GridMap,
 		Player,
 		Car,
+		Tank,
 
 		PopupContainer,
 		BulletContainer,
+		BigBulletContainer: BulletContainer,
 
 		Box1: Box,
 		Box2: Box,
@@ -37,27 +46,32 @@ export class MainScene extends Node2D {
 		Box4: Box,
 
 		ButtonAction: Button,
-		JoystickBody: Joystick,
-		JoystickHead: Joystick,
+		JoystickL: Joystick,
+		JoystickR: Joystick,
 
 		SystemInfo
 	}}
 
 	// aliases
-	private get $camera() { return this.get('Camera2D'); }
+	public get $camera() { return this.get('Camera2D'); }
 
-	private get $gridMap() { return this.get('GridMap'); }
-	private get $player() { return this.get('Player'); }
-	private get $car() { return this.get('Car'); }
-	private get $popups() { return this.get('PopupContainer'); }
-	private get $bullets() { return this.get('BulletContainer'); }
+	public get $gridMap() { return this.get('GridMap'); }
+	public get $player() { return this.get('Player'); }
+	public get $car() { return this.get('Car'); }
+	public get $tank() { return this.get('Tank'); }
+	public get $popups() { return this.get('PopupContainer'); }
+	public get $bullets() { return this.get('BulletContainer'); }
+	public get $big_bullets() { return this.get('BigBulletContainer'); }
 
-	private get $btnAction() { return this.get('ButtonAction'); }
-	private get $joystickBody() { return this.get('JoystickBody'); }
-	private get $joystickHead() { return this.get('JoystickHead'); }
+	public get $btnAction() { return this.get('ButtonAction'); }
+	public get $joystickL() { return this.get('JoystickL'); }
+	public get $joystickR() { return this.get('JoystickR'); }
 
 
 	private focused: Node2D | null = null;
+	private currentTransport: ITransport | null = null;
+	private transports: ITransport[] = [];
+
 
 	protected async _init(this: MainScene): Promise<void> {
 		await super._init();
@@ -70,20 +84,30 @@ export class MainScene extends Node2D {
 
 		const size = gm.screen.buf().div(2);
 		const cs = 100;
-		this.$joystickBody.position.set(size.buf().inc(-1, 1).sub(-cs, cs));
-		this.$joystickHead.position.set(size.buf().sub(cs));
+		this.$joystickL.position.set(size.buf().inc(-1, 1).sub(-cs, cs));
+		this.$joystickR.position.set(size.buf().sub(cs));
 
 		this.$btnAction.position.add(0, size.y - 30);
 
 		this.get('Box1')!.position.set(100, -270);
 		this.get('Box1')!.size.inc(4);
 
+
 		this.$player.position.set(-100, 150);
+		this.$car.position.set(-200, 0);
+
+
 		this.$player.on('shoot', o => {
 			this.$bullets.createItem(
-				o.globalPosition.moveAngle(20, o.head.globalRotation - Math.PI/2).div(o.pixelDensity),
-				o.head.globalRotation - Math.PI/2,
-				0.1
+				o.globalPosition.moveAngle(20, o.$head.globalRotation - Math.PI/2).div(o.pixelDensity),
+				o.$head.globalRotation - Math.PI/2, 0.1, 2
+			);
+		});
+
+		this.$tank.on('shoot', o => {
+			this.$big_bullets.createItem(
+				o.$head.globalPosition.moveAngle(60, o.$head.globalRotation - Math.PI/2).div(o.pixelDensity),
+				o.$head.globalRotation - Math.PI/2, 0.1, 5
 			);
 		});
 
@@ -107,25 +131,45 @@ export class MainScene extends Node2D {
 		};
 
 		moveChild(this.$btnAction, this.$camera);
-		moveChild(this.$joystickBody, this.$camera);
-		moveChild(this.$joystickHead, this.$camera);
+		moveChild(this.$joystickL, this.$camera);
+		moveChild(this.$joystickR, this.$camera);
+
+		this.transports.push(this.$car, this.$tank);
+
+		const getSortTransport = (d: number) => {
+			const arr: ITransport[] = [];
+
+			for(let i = 0; i < this.transports.length; i++) {
+				if(this.$player.globalPosition.getDistance(this.transports[i].globalPosition) < d) {
+					arr.push(this.transports[i]);
+				}
+			}
+
+			arr.sort((a, b) => this.$player.globalPosition.getDistance(a.globalPosition)
+				-
+			this.$player.globalPosition.getDistance(b.globalPosition));
+
+			return arr;
+		};
 
 		this.$btnAction.text = 'action';
 		this.$btnAction.on('pressed', () => {
-			if(
-				this.$player.globalPosition.getDistance(this.$car.globalPosition) < 100 &&
-				this.focused === this.$player
-			) {
+			if(!this.currentTransport) {
+				const ts = getSortTransport(100);
+				if(!ts.length) return;
+
 				this.$player.visible = false;
 				this.$player.b2body!.SetActive(false);
 
-				this.focused = this.$car.$sprite;
-			} else if(this.focused === this.$car.$sprite) {
+				this.currentTransport = ts[0];
+				this.focused = this.currentTransport;
+			} else {
 				this.$player.visible = true;
 				this.$player.b2body!.SetActive(true);
-				const pos = Vector2.from(this.$car.b2_position).moveAngle(-2, this.$car.globalRotation);
+				const pos = Vector2.from(this.currentTransport.b2_position).moveAngle(-2, this.currentTransport.globalRotation);
 				this.$player.b2body?.SetPosition(new b2Vec2(pos.x, pos.y));
 
+				this.currentTransport = null;
 				this.focused = this.$player;
 			}
 		});
@@ -134,14 +178,17 @@ export class MainScene extends Node2D {
 	protected _process(this: MainScene, dt: number): void {
 		if(this.focused) {
 			this.$camera.position.moveTime(this.focused.globalPosition, 10);
-			this.$camera.rotation += (this.focused.globalRotation - gm.viewport.rotation) / 10;
+			if(this.focused === this.$tank) {
+				this.$camera.rotation += (this.focused.globalRotation - gm.viewport.rotation) / 10;
+				// this.$camera.rotation += (this.focused.$head.globalRotation - gm.viewport.rotation) / 10;
+			} else this.$camera.rotation += (this.focused.globalRotation - gm.viewport.rotation) / 10;
 		}
 
-		if(this.focused === this.$player) {
-			this.$player.moveAngle(this.$joystickBody, dt);
-			this.$player.headMove(this.$joystickHead, dt);
+		if(this.currentTransport === null) {
+			this.$player.moveAngle(this.$joystickL, dt);
+			this.$player.headMove(this.$joystickR, dt);
 		} else {
-			this.$car.control(this.$joystickBody);
+			this.currentTransport.control(dt, this.$joystickL, this.$joystickR);
 		}
 	}
 
@@ -161,6 +208,6 @@ export class MainScene extends Node2D {
 
 		ctx.beginPath();
 		ctx.fillStyle = '#eeeeee';
-		ctx.fillText((this.$joystickBody.angle / (Math.PI/180)).toFixed(), 20, 70);
+		ctx.fillText((this.$joystickL.angle / (Math.PI/180)).toFixed(), 20, 70);
 	}
 }

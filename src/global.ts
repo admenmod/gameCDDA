@@ -44,6 +44,7 @@ export const gm = new class GameManager extends EventDispatcher {
 
 	public root!: Node;
 
+	public stats: Record<string, string> = {};
 
 	constructor() {
 		super();

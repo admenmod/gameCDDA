@@ -142,6 +142,7 @@ export class Node2D extends CanvasItem {
 
 		viewport.ctx.scale(scale.x, scale.y);
 
+		viewport.ctx.globalAlpha = this.globalAlpha;
 
 		this._draw(viewport);
 

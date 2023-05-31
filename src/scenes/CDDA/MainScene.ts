@@ -58,21 +58,21 @@ export class MainScene extends Node2D {
 
 
 	// aliases
-	private get gridMap() { return this.get('GridMap'); }
+	public get $gridMap() { return this.get('GridMap'); }
 
-	private get world() { return this.get('World'); }
-	private get tilemap() { return this.get('TileMap'); }
-	private get player() { return this.get('Player'); }
-	private get popups() { return this.get('PopupContainer'); }
+	public get $world() { return this.get('World'); }
+	public get $tilemap() { return this.get('TileMap'); }
+	public get $player() { return this.get('Player'); }
+	public get $popups() { return this.get('PopupContainer'); }
 
-	private get apple1() { return this.get('Apple1'); }
-	private get apple2() { return this.get('Apple2'); }
-	private get apple3() { return this.get('Apple3'); }
-	private get apple4() { return this.get('Apple4'); }
-	private get apple5() { return this.get('Apple5'); }
+	public get $apple1() { return this.get('Apple1'); }
+	public get $apple2() { return this.get('Apple2'); }
+	public get $apple3() { return this.get('Apple3'); }
+	public get $apple4() { return this.get('Apple4'); }
+	public get $apple5() { return this.get('Apple5'); }
 
-	private get textdata() { return this.get('textdata'); }
-	private get texthelp() { return this.get('texthelp'); }
+	public get $textdata() { return this.get('textdata'); }
+	public get $texthelp() { return this.get('texthelp'); }
 
 
 	public async _init(this: MainScene): Promise<void> {
@@ -88,16 +88,16 @@ export class MainScene extends Node2D {
 		keyboardInputInterceptor.init();
 		canvas.addEventListener('click', () => keyboardInputInterceptor.focus());
 
-		this.world.size.set(20, 20);
-		this.world.date.setHours(6);
+		this.$world.size.set(20, 20);
+		this.$world.date.setHours(6);
 
-		this.player.cellpos.set(8, 8);
+		this.$player.cellpos.set(8, 8);
 
-		this.apple1.cellpos.set(6, 6);
-		this.apple2.cellpos.set(7, 6);
-		this.apple3.cellpos.set(6, 7);
-		this.apple4.cellpos.set(5, 6);
-		this.apple5.cellpos.set(6, 5);
+		this.$apple1.cellpos.set(6, 6);
+		this.$apple2.cellpos.set(7, 6);
+		this.$apple3.cellpos.set(6, 7);
+		this.$apple4.cellpos.set(5, 6);
+		this.$apple5.cellpos.set(6, 5);
 
 
 		this.keymapperOfActions = new KeymapperOfActions(this.normal_mode);
@@ -106,7 +106,7 @@ export class MainScene extends Node2D {
 
 
 		const updateOnResize = (size: Vector2) => {
-			this.gridMap.size.set(size);
+			this.$gridMap.size.set(size);
 		};
 
 		updateOnResize(gm.viewport.size);
@@ -117,16 +117,16 @@ export class MainScene extends Node2D {
 		await super._init();
 
 
-		this.world.addObject(this.player);
+		this.$world.addObject(this.$player);
 
-		this.world.addObject(this.apple1);
-		this.world.addObject(this.apple2);
-		this.world.addObject(this.apple3);
-		this.world.addObject(this.apple4);
-		this.world.addObject(this.apple5);
+		this.$world.addObject(this.$apple1);
+		this.$world.addObject(this.$apple2);
+		this.$world.addObject(this.$apple3);
+		this.$world.addObject(this.$apple4);
+		this.$world.addObject(this.$apple5);
 
 
-		const tilemap = this.tilemap.map!;
+		const tilemap = this.$tilemap.map!;
 		console.log(tilemap);
 
 
@@ -144,7 +144,7 @@ export class MainScene extends Node2D {
 
 				oInits.push(o.init().then(() => {
 					o.cellpos.set(x, y);
-					this.world.addObject(o);
+					this.$world.addObject(o);
 				}));
 			}
 		}
@@ -153,14 +153,14 @@ export class MainScene extends Node2D {
 	}
 
 	protected _ready(this: MainScene): void {
-		this.popups.zIndex += 100;
+		this.$popups.zIndex += 100;
 
-		this.textdata.color = '#99ee22';
-		this.textdata.position.set(-200, 100);
+		this.$textdata.color = '#99ee22';
+		this.$textdata.position.set(-200, 100);
 
-		this.texthelp.color = '#779933';
-		this.texthelp.position.set(400, 40);
-		this.texthelp.text =
+		this.$texthelp.color = '#779933';
+		this.$texthelp.position.set(400, 40);
+		this.$texthelp.text =
 `w + Arrow - взять в руки
 d + Arrow - выбросить предмет в руках
 i + i - open inventory
@@ -193,7 +193,7 @@ dblclick - полноэкранный режим
 			}
 
 
-			this.popups.createPopap(text, this.player.globalPosition.add(0, -1.5));
+			this.$popups.createPopap(text, this.$player.globalPosition.add(0, -1.5));
 		};
 
 		this.normal_mode.register(['i', 'i'], onmappings);
@@ -206,10 +206,10 @@ dblclick - полноэкранный режим
 		this.normal_mode.register(['a', 's'], onmappings);
 		this.normal_mode.register(['a', 'a'], onmappings);
 
-		this.normal_mode.register(['ArrowUp'], () => this.player.move(Vector2.UP));
-		this.normal_mode.register(['ArrowDown'], () => this.player.move(Vector2.DOWN));
-		this.normal_mode.register(['ArrowLeft'], () => this.player.move(Vector2.LEFT));
-		this.normal_mode.register(['ArrowRight'], () => this.player.move(Vector2.RIGHT));
+		this.normal_mode.register(['ArrowUp'], () => this.$player.move(Vector2.UP));
+		this.normal_mode.register(['ArrowDown'], () => this.$player.move(Vector2.DOWN));
+		this.normal_mode.register(['ArrowLeft'], () => this.$player.move(Vector2.LEFT));
+		this.normal_mode.register(['ArrowRight'], () => this.$player.move(Vector2.RIGHT));
 
 
 		const map_pikeup: KeymapperOfActions.Action = mapping => {
@@ -220,8 +220,8 @@ dblclick - полноэкранный режим
 			else if(mapping.mapping[1] === 'ArrowLeft') dir.set(-1, 0);
 			else if(mapping.mapping[1] === 'ArrowRight') dir.set(1, 0);
 
-			const o = this.world.getObjectCellUp(this.player.cellpos.buf().add(dir));
-			if(o) this.player.tryPickup(o);
+			const o = this.$world.getObjectCellUp(this.$player.cellpos.buf().add(dir));
+			if(o) this.$player.tryPickup(o);
 		};
 
 		this.normal_mode.register(['w', 'ArrowUp'], map_pikeup);
@@ -238,7 +238,7 @@ dblclick - полноэкранный режим
 			else if(mapping.mapping[1] === 'ArrowLeft') dir.set(-1, 0);
 			else if(mapping.mapping[1] === 'ArrowRight') dir.set(1, 0);
 
-			this.player.tryPutfromHandsTo(dir);
+			this.$player.tryPutfromHandsTo(dir);
 		};
 
 		this.normal_mode.register(['d', 'ArrowUp'], map_put);
@@ -250,10 +250,10 @@ dblclick - полноэкранный режим
 	protected _process(this: MainScene, dt: number): void {
 		this.keymapperOfActions.update(dt);
 
-		gm.viewport.position.moveTime(this.player.globalPosition, 10);
+		gm.viewport.position.moveTime(this.$player.globalPosition, 10);
 		// gm.camera.process(dt, touches);
 
-		this.textdata.text = 'DATE: '+this.world.date.getTimeString();
+		this.$textdata.text = 'DATE: '+this.$world.date.getTimeString();
 	}
 
 	protected _draw(this: MainScene, { ctx, size }: Viewport): void {
@@ -275,7 +275,7 @@ dblclick - полноэкранный режим
 		// ctx.font = '20px Arial';
 		// ctx.fillText('timeout: ' + this.keymapperOfActions.timeout.toFixed(0), 10, 120);
 		ctx.font = '15px Arial';
-		ctx.fillText('date: '+this.world.date.getTimeString(), 10, 140);
+		ctx.fillText('date: '+this.$world.date.getTimeString(), 10, 140);
 
 
 		ctx.fillStyle = '#eeeeee';

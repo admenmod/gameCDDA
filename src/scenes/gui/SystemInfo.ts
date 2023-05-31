@@ -1,6 +1,8 @@
-import { Node2D } from '@/scenes/nodes/Node2D';
 import { Vector2 } from '@ver/Vector2';
 import type { Viewport } from '@ver/Viewport';
+
+import { Node2D } from '@/scenes/nodes/Node2D';
+import { gm } from '@/global';
 
 
 export class SystemInfo extends Node2D {
@@ -34,9 +36,23 @@ export class SystemInfo extends Node2D {
 		const ctx = viewport.ctx;
 		ctx.beginPath();
 
-		ctx.font = `18px arkhip, Arial`;
 		ctx.textBaseline = 'top';
+		ctx.font = `15px arkhip, Arial`;
 
+		const space = 15;
+		const offset_stats = 100;
+		let i = 0;
+		for(const id in gm.stats) {
+			ctx.strokeStyle = '#111111';
+			ctx.strokeText(gm.stats[id], this.padding.x, offset_stats + this.padding.y + i * space);
+			ctx.fillStyle = '#eeeeee';
+			ctx.fillText(gm.stats[id], this.padding.x, offset_stats + this.padding.y + i * space);
+
+			i += 1;
+		}
+
+
+		ctx.font = `18px arkhip, Arial`;
 		ctx.strokeStyle = '#111111';
 		ctx.strokeText(this.textFPS, this.padding.x, this.padding.y);
 		ctx.fillStyle = '#eeeeee';

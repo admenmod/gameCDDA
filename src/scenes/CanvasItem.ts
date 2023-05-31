@@ -57,6 +57,10 @@ export class CanvasItem extends Node {
 	}
 	public set visible(v) { this._visible = v; }
 
+	private _alphaAsRelative: boolean = true;
+	public set alphaAsRelative(v) { this._alphaAsRelative = v; }
+	public get alphaAsRelative() { return this._alphaAsRelative; }
+
 	private _alpha: number = 1;
 	public set alpha(v) { this._alpha = Math.min(1, Math.max(0, v)); }
 	public get alpha() { return this._alpha; }
@@ -79,6 +83,7 @@ export class CanvasItem extends Node {
 
 
 	public get globalzIndex(): number { return this.getRelativezIndex(Node.MAX_NESTING, this[PARENT_CACHE]); }
+	public get globalAlpha(): number { return this.getRelativeAlpha(Node.MAX_NESTING, this[PARENT_CACHE]); }
 
 	public getRelativezIndex(nl: number = 0, arr: CanvasItem[] = this[PARENT_CACHE]): number {
 		const l = Math.min(nl, arr.length, Node.MAX_NESTING);
@@ -90,6 +95,21 @@ export class CanvasItem extends Node {
 			acc += arr[i].zIndex;
 
 			if(!arr[i].zAsRelative) return acc;
+		}
+
+		return acc;
+	}
+
+	public getRelativeAlpha(nl: number = 0, arr: CanvasItem[] = this[PARENT_CACHE]): number {
+		const l = Math.min(nl, arr.length, Node.MAX_NESTING);
+		let acc = this.alpha;
+
+		if(!this.alphaAsRelative) return acc;
+
+		for(let i = 0; i < l; i++) {
+			acc *= arr[i].alpha;
+
+			if(!arr[i].alphaAsRelative) return acc;
 		}
 
 		return acc;

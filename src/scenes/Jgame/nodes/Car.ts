@@ -21,9 +21,10 @@ export class Car extends PhysicsBox2DItem {
 	protected async _init(this: Car): Promise<void> {
 		await super._init();
 
-		await this.$sprite.load('assets/img/player.png');
-		this.$sprite.size.set(this.size);
-		this.pivot_offset.set(0, this.size.y/2 / 10*9);
+		await this.$sprite.load('assets/img/car.png');
+		this.$sprite.offset_angle = -Math.PI/2;
+		this.$sprite.size.div(4);
+		this.size.set(this.$sprite.size);
 
 
 		this.b2bodyDef.type = 2;
@@ -32,7 +33,7 @@ export class Car extends PhysicsBox2DItem {
 		this.b2fixtureDef.density = 2;
 
 		const shape = new b2Shapes.b2PolygonShape();
-		shape.SetAsBox(this.size.x/this.pixelDensity/2, this.size.y/this.pixelDensity/2);
+		shape.SetAsBox(this.size.y/this.pixelDensity/2, this.size.x/this.pixelDensity/2);
 
 
 		this.on('PhysicsBox2D:init', () => {
@@ -46,14 +47,13 @@ export class Car extends PhysicsBox2DItem {
 		this.b2fixtureDef.shape = shape;
 	}
 
-
 	protected _process(dt: number): void {
 		this.b2_angularVelocity *= 0.95;
 		this.b2_velosity.Multiply(0.95);
 	}
 
 
-	public control(joystick: Joystick): void {
+	public control(dt: number, joystick: Joystick, joystickR: Joystick): void {
 		let value = joystick.value;
 		let angle = joystick.angle;
 

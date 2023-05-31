@@ -14,13 +14,13 @@ export class Bullet extends PhysicsBox2DItem {
 	protected async _init(): Promise<void> {
 		await super._init();
 
-		const shape = new b2Shapes.b2CircleShape();
-		shape.SetRadius(this.size.y/this.pixelDensity/2);
-
 		this.b2bodyDef.type = 2;
 		this.b2bodyDef.bullet = true;
 		this.b2bodyDef.allowSleep = false;
 		this.b2bodyDef.fixedRotation = true;
+
+		const shape = new b2Shapes.b2CircleShape();
+		shape.SetRadius(this.size.y/this.pixelDensity/2);
 
 		this.b2fixtureDef.shape = shape;
 	}
@@ -53,11 +53,11 @@ export class BulletContainer extends Node2D {
 	}
 
 
-	public createItem(pos: Vector2, angle: number, value: number): void {
+	public createItem(pos: Vector2, angle: number, value: number, size: number): void {
 		let item: Bullet;
 		let isNewItem = false;
 
-		if(this.items.length > this.maxItems) {
+		if(this.items.length >= this.maxItems) {
 			item = this.items.splice(0, 1)[0];
 			this.items.push(item);
 			isNewItem = false;
@@ -72,6 +72,8 @@ export class BulletContainer extends Node2D {
 			item.b2_velosity.x = value * Math.cos(angle);
 			item.b2_velosity.y = value * Math.sin(angle);
 		} else {
+			item.size.set(size);
+
 			item.init().then(() => {
 				physicsBox2DSystem.add(item);
 

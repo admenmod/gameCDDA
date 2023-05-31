@@ -17,11 +17,12 @@ export class Player extends PhysicsBox2DItem {
 
 
 	public TREE() { return {
-		body: Sprite,
-		head: Sprite
+		Body: Sprite,
+		Head: Sprite
 	}}
 
-	public get head() { return this.get('head'); }
+	public get $body() { return this.get('Body'); }
+	public get $head() { return this.get('Head'); }
 
 
 	protected async _init(this: Player): Promise<void> {
@@ -38,17 +39,12 @@ export class Player extends PhysicsBox2DItem {
 		this.b2fixtureDef.shape = shape;
 
 
-		const body_sprite = this.get('body');
-		await body_sprite.load('assets/img/player.png');
+		await this.$body.load('assets/img/player.png');
+		this.$body.scale.inc(2);
 
-		body_sprite.scale.inc(2);
-
-
-		const head_sprite = this.get('head');
-		head_sprite.load('assets/img/player.png');
-
-		head_sprite.offset.set(0, -5);
-		head_sprite.scale.inc(0.5, 3);
+		await this.$head.load('assets/img/player.png');
+		this.$head.offset.set(0, -5);
+		this.$head.scale.inc(0.5, 3);
 	}
 
 	protected _process(dt: number): void {
@@ -72,12 +68,12 @@ export class Player extends PhysicsBox2DItem {
 	private timer_shoot: number = 0;
 
 	public headMove(joystick: Joystick, dt: number): void {
-		this.get('head').rotation = joystick.angle;
+		this.$head.rotation = joystick.angle;
 
 		if(joystick.value === 1 && joystick.touch && this.timer_shoot < 0) {
-			this.head.offset.set(0, -1);
+			this.$head.offset.set(0, -1);
 
-			const ha = this.head.rotation;
+			const ha = this.$head.rotation;
 			this.b2_velosity.x -= Math.cos(ha - Math.PI/2) * 0.001;
 			this.b2_velosity.y -= Math.sin(ha - Math.PI/2) * 0.001;
 
@@ -85,7 +81,7 @@ export class Player extends PhysicsBox2DItem {
 
 			this.timer_shoot = 1000;
 		} else {
-			this.head.offset.moveTime(new Vector2(0, -5), 10);
+			this.$head.offset.moveTime(new Vector2(0, -5), 10);
 			this.timer_shoot -= dt;
 		}
 	}

@@ -17,6 +17,7 @@ export class Sprite extends Node2D {
 	public get height() { return this.image?.naturalHeight || 0; }
 
 	public offset = new Vector2();
+	public offset_angle: number = 0;
 	public size = new Vector2();
 
 
@@ -27,6 +28,8 @@ export class Sprite extends Node2D {
 
 	protected _draw({ ctx }: Viewport): void {
 		if(!this.image) return;
+
+		if(this.offset_angle !== 0) ctx.rotate(this.offset_angle);
 
 		ctx.drawImage(this.image,
 			this.offset.x - this.size.x/2, this.offset.y -this.size.y/2,
