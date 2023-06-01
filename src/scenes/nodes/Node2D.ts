@@ -73,9 +73,11 @@ export class Node2D extends CanvasItem {
 
 			acc.add(prev.position);
 
-			acc.sub(next.pivot_offset);
-			if(next.rotation !== 0) acc.rotate(next.rotation);
-			acc.add(next.pivot_offset);
+			if(next.rotation !== 0) {
+				acc.sub(next.pivot_offset);
+				acc.rotate(next.rotation);
+				acc.add(next.pivot_offset);
+			}
 
 			acc.inc(next.scale);
 

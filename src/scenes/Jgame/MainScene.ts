@@ -4,27 +4,26 @@ import type { Viewport } from '@ver/Viewport';
 import { Node } from '@/scenes/Node';
 import { Node2D } from '@/scenes/nodes/Node2D';
 import { PopupContainer } from '@/scenes/nodes/Popup';
-import { Player } from './nodes/Player';
 
 import { GridMap } from '@/scenes/gui/GridMap';
 import { SystemInfo } from '@/scenes/gui/SystemInfo';
-import { gm } from '@/global';
 
-import { TextNode } from '@/scenes/gui/TextNode';
-import { Box } from './nodes/Box';
+import { Camera2D } from '@/scenes/nodes/Camera2D';
 import { Joystick } from '@/scenes/gui/Joystick';
-import { SensorCamera } from '@/modules/SensorCamera';
-import { Camera2D } from '../nodes/Camera2D';
 import { Button } from '@/scenes/gui/Button';
-import { BulletContainer } from './nodes/Bullet';
+import { Box } from './nodes/Box';
 import { Car } from './nodes/Car';
 import { Tank } from './nodes/Tank';
+import { Player } from './nodes/Player';
+import { BulletContainer } from './nodes/Bullet';
+
 import { b2Vec2 } from '@/modules/Box2DWrapper';
-import { PhysicsBox2DItem } from '../PhysicsBox2DItem';
+import { gm } from '@/global';
+import type { PhysicsBox2DItem } from '@/scenes/PhysicsBox2DItem';
 
 
 type ITransport = PhysicsBox2DItem & {
-	control(dt: number, joystickL: Joystick, joystickR: Joystick): void;
+	control(joystickL: Joystick, joystickR?: Joystick): void;
 };
 
 
@@ -107,7 +106,7 @@ export class MainScene extends Node2D {
 		this.$tank.on('shoot', o => {
 			this.$big_bullets.createItem(
 				o.$head.globalPosition.moveAngle(60, o.$head.globalRotation - Math.PI/2).div(o.pixelDensity),
-				o.$head.globalRotation - Math.PI/2, 0.1, 5
+				o.$head.globalRotation - Math.PI/2, 0.3, 5
 			);
 		});
 
@@ -185,10 +184,10 @@ export class MainScene extends Node2D {
 		}
 
 		if(this.currentTransport === null) {
-			this.$player.moveAngle(this.$joystickL, dt);
-			this.$player.headMove(this.$joystickR, dt);
+			this.$player.moveAngle(this.$joystickL);
+			this.$player.headMove(this.$joystickR);
 		} else {
-			this.currentTransport.control(dt, this.$joystickL, this.$joystickR);
+			this.currentTransport.control(this.$joystickL, this.$joystickR);
 		}
 	}
 

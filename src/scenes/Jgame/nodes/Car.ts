@@ -53,7 +53,7 @@ export class Car extends PhysicsBox2DItem {
 	}
 
 
-	public control(dt: number, joystick: Joystick, joystickR: Joystick): void {
+	public control(joystick: Joystick, joystickR: Joystick): void {
 		let value = joystick.value;
 		let angle = joystick.angle;
 
@@ -61,7 +61,7 @@ export class Car extends PhysicsBox2DItem {
 			const dir = Math.abs(angle) < Math.PI/2 ? 1 : -1;
 			const dira = Math.sign(angle);
 
-			const v = value / 10000 * dir * 4;
+			const v = value * dir * (dir > 0 ? 0.001 : 0.0003);
 			const a = (Math.abs(angle) < Math.PI/2 ? Math.abs(angle) : -Math.PI/2 / Math.abs(angle)) / 10000 * dira;
 
 			this.b2_angularVelocity += a * this.b2_velosity.Length() * 70;

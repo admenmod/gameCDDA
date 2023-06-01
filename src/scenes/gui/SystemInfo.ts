@@ -10,6 +10,8 @@ export class SystemInfo extends Node2D {
 
 	public padding = new Vector2(10, 10);
 	public time: number = 0;
+	public fpsacc: number = 0;
+	public fpsi: number = 0;
 
 	protected async _init(): Promise<void> {
 		this.based_on_camera_isCentred = false;
@@ -23,12 +25,16 @@ export class SystemInfo extends Node2D {
 	}
 
 	protected _process(dt: number) {
-		if(this.time > 100) {
-			this.textFPS = `FPS: ${(1000/dt).toFixed(2)}`;
+		if(this.time > 500) {
+			this.textFPS = `FPS: ${(this.fpsacc/this.fpsi).toFixed(2)}`;
 
+			this.fpsi = 0;
+			this.fpsacc = 0;
 			this.time = 0;
-	}
+		}
 
+		this.fpsi += 1;
+		this.fpsacc += 1000/dt;
 		this.time += dt;
 	}
 

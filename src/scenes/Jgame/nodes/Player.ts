@@ -48,6 +48,8 @@ export class Player extends PhysicsBox2DItem {
 	}
 
 	protected _process(dt: number): void {
+		if(this.timer_shoot > 0) this.timer_shoot -= dt;
+
 		this.b2_angularVelocity *= 0.95;
 		this.b2_velosity.Multiply(0.95);
 	}
@@ -57,7 +59,7 @@ export class Player extends PhysicsBox2DItem {
 	}
 
 
-	public moveAngle({ value, angle }: Joystick, dt: number): void {
+	public moveAngle({ value, angle }: Joystick): void {
 		value /= 2000
 
 		this.b2_velosity.x += value * Math.cos(angle - Math.PI/2);
@@ -67,10 +69,10 @@ export class Player extends PhysicsBox2DItem {
 
 	private timer_shoot: number = 0;
 
-	public headMove(joystick: Joystick, dt: number): void {
+	public headMove(joystick: Joystick): void {
 		this.$head.rotation = joystick.angle;
 
-		if(joystick.value === 1 && joystick.touch && this.timer_shoot < 0) {
+		if(joystick.value === 1 && joystick.touch && this.timer_shoot <= 0) {
 			this.$head.offset.set(0, -1);
 
 			const ha = this.$head.rotation;
@@ -80,9 +82,6 @@ export class Player extends PhysicsBox2DItem {
 			this['@shoot'].emit(this);
 
 			this.timer_shoot = 1000;
-		} else {
-			this.$head.offset.moveTime(new Vector2(0, -5), 10);
-			this.timer_shoot -= dt;
-		}
+		} else this.$head.offset.moveTime(new Vector2(0, -5), 10);
 	}
 }

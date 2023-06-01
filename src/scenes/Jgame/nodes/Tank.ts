@@ -55,6 +55,8 @@ export class Tank extends PhysicsBox2DItem {
 	}
 
 	protected _process(dt: number): void {
+		if(this.timer_shoot > 0) this.timer_shoot -= dt;
+
 		this.b2_angularVelocity *= 0.93;
 		this.b2_velosity.Multiply(0.93);
 	}
@@ -62,7 +64,7 @@ export class Tank extends PhysicsBox2DItem {
 
 	private timer_shoot: number = 0;
 
-	public control(dt: number, joystickL: Joystick, joystickR: Joystick): void {
+	public control(joystickL: Joystick, joystickR: Joystick): void {
 		if(joystickL.touch) {
 			const value = joystickL.value;
 			const angle = joystickL.angle;
@@ -70,8 +72,9 @@ export class Tank extends PhysicsBox2DItem {
 			const dir = Math.abs(angle) < Math.PI/2 ? 1 : -1;
 			const dira = Math.sign(angle);
 
-			const a = (Math.abs(angle) < Math.PI/2 ? Math.abs(angle) : -Math.PI/2 / Math.abs(angle)) * 0.00001 * dira;
-			const v = value * 0.0001 * dir * (Math.abs(roundLoop(Math.abs(angle) - Math.PI/2)) < Math.PI/10 ? 0 : 1);
+			const a = (Math.abs(angle) < Math.PI/2 ? Math.abs(angle) : -Math.PI/2 / Math.abs(angle)) * 0.000015 * dira;
+			let v = value * dir * (dir > 0 ? 0.0003 : 0.0001);
+			v *= (Math.abs(roundLoop(Math.abs(angle) - Math.PI/2)) < Math.PI/10 ? 0 : 1);
 
 			this.b2_angularVelocity += a;
 			this.b2_velosity.x += v * Math.cos(this.b2_angle - Math.PI/2);
@@ -91,7 +94,7 @@ export class Tank extends PhysicsBox2DItem {
 			}
 
 
-			if(value === 1 && this.timer_shoot < 0) {
+			if(value === 1 && this.timer_shoot <= 0) {
 				this.$head.offset.set(0, -20);
 
 				const ha = this.$head.rotation;
@@ -101,10 +104,7 @@ export class Tank extends PhysicsBox2DItem {
 				this['@shoot'].emit(this);
 
 				this.timer_shoot = 5000;
-			} else {
-				this.$head.offset.moveTime(this.offsetHead, 10);
-				this.timer_shoot -= dt;
-			}
+			} else this.$head.offset.moveTime(this.offsetHead, 10);
 		}
 	}
 }

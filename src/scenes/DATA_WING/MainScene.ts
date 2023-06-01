@@ -23,6 +23,7 @@ export class MainScene extends Node2D {
 
 
 	public TREE() { return {
+		Camera2D,
 		GridMap,
 		Player, PopupContainer,
 
@@ -39,6 +40,7 @@ export class MainScene extends Node2D {
 	}}
 
 	// aliases
+	public get $camera() { return this.get('Camera2D'); }
 	public get $gridMap() { return this.get('GridMap'); }
 	public get $player() { return this.get('Player'); }
 	public get $popups() { return this.get('PopupContainer'); }
@@ -48,6 +50,9 @@ export class MainScene extends Node2D {
 
 	protected async _init(this: MainScene): Promise<void> {
 		await super._init();
+
+		this.$camera.viewport = gm.viewport;
+		this.$camera.current = true;
 
 		this.$gridMap.tile.set(60);
 		this.$gridMap.coordinates = true;
@@ -64,8 +69,8 @@ export class MainScene extends Node2D {
 		this.$checkBoxControl.position.add(-100, -50);
 		this.$checkBoxControl.size.add(50, 5);
 		this.$checkBoxControl.on('pressed', () => {
-			this.$player.control_is_touch = !this.$player.control_is_touch;
-			this.$checkBoxControl.text = this.$player.control_is_touch ? 'control to joystick' : 'control to touch';
+			this.control_is_touch = !this.control_is_touch;
+			this.$checkBoxControl.text = this.control_is_touch ? 'control to joystick' : 'control to touch';
 		});
 
 
@@ -79,33 +84,61 @@ export class MainScene extends Node2D {
 	}
 
 	protected _ready(this: MainScene): void {
-		this.$popups.zIndex += 100;
+		this.$camera.zIndex = 100;
+		this.$popups.zIndex = 10;
 
-		// this.popups.createPopap(text, this.player.globalPosition.add(0, -1.5));
+		const moveChild = (o: Node, p: Node) => {
+			o.parent!.removeChild(o.name, true);
+			p.addChild(o);
+		};
 
-		(async () => {
-			await Camera2D.load();
-			const camera = new Camera2D();
-			camera.viewport = gm.viewport;
-			camera.current = true;
-			await camera.init();
-			this.getChild('Player')!.addChild(camera);
-		})();
+		moveChild(this.$joystick, this.$camera);
 	}
+
+
+	private l_input: boolean = false;
+	private r_input: boolean = false;
+	private control_is_touch: boolean = true;
 
 	protected _process(this: MainScene, dt: number): void {
 		this.sensorCamera.update(dt, touches);
-		// gm.viewport.position.moveTime(this.player.globalPosition, 10);
-		// gm.viewport.rotation += (this.player.globalRotation - gm.viewport.rotation) / 10;
+		this.$camera.position.moveTime(this.$player.globalPosition, 10);
+		this.$camera.rotation += (this.$player.globalRotation - this.$camera.rotation) / 10;
+
+
+		const player = this.$player;
 
 		const angle = this.$joystick.angle;
-		if(this.$joystick.touch && !this.$player.control_is_touch) {
+		if(this.$joystick.touch && !this.control_is_touch) {
 			const dir = Math.abs(angle) < Math.PI/2 ? 1 : -1;
 			const dira = Math.sign(angle);
 
 			const a = Math.abs(angle) < Math.PI/2 ? Math.abs(angle) : -Math.PI/2 / Math.abs(angle);
 
-			this.$player.moveAngle(this.$joystick.value / 10000*2 * dir, (a * dira) / 10000);
+			player.moveAngle(this.$joystick.value / 10000*2 * dir, (a * dira) / 10000);
+		} else if(this.control_is_touch) {
+			this.l_input = false;
+			this.r_input = false;
+
+			for(let i = 0; i < touches.touches.length; i++) {
+				const touch = touches.touches[i];
+
+				if(touch.isDown()) {
+					if(touch.x < gm.screen.x/2) this.l_input = true;
+					else if(touch.x > gm.screen.x/2) this.r_input = true;
+				}
+			}
+
+			if(this.l_input || this.r_input) {
+				const speed = 0.00001 * dt;
+				const rot_speed = 0.00001 * dt;
+
+				if(this.l_input) player.b2_angularVelocity += rot_speed;
+				if(this.r_input) player.b2_angularVelocity -= rot_speed;
+
+				player.b2_velosity.x += speed * Math.cos(player.b2_angle - Math.PI/2);
+				player.b2_velosity.y += speed * Math.sin(player.b2_angle - Math.PI/2);
+			}
 		}
 	}
 
